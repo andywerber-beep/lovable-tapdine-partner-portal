@@ -104,17 +104,17 @@ function Dashboard() {
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
-                Saturday service
+                Coffee shop · Central
               </p>
               <h1 className="mt-2 text-3xl font-bold md:text-4xl">The Copper Room</h1>
             </div>
             <div className="flex items-center gap-3">
               <span className="inline-flex items-center gap-2 rounded-full border border-success/40 bg-success/15 px-4 py-1.5 text-xs font-semibold text-success">
                 <span className="h-2 w-2 rounded-full bg-success" />
-                Accepting orders
+                Pings on
               </span>
               <button className="rounded-full bg-brand px-5 py-2 text-sm font-semibold text-brand-foreground">
-                Pause service
+                New offer
               </button>
             </div>
           </div>
@@ -134,23 +134,23 @@ function Dashboard() {
           <div className="mt-6 grid gap-6 xl:grid-cols-[1.6fr_1fr]">
             <section className="rounded-3xl border border-border bg-surface p-6">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold">Live order board</h2>
+                <h2 className="text-lg font-semibold">Offer board</h2>
                 <span className="text-xs text-muted-foreground">Updated just now</span>
               </div>
               <ul className="mt-5 space-y-3">
-                {orders.map((o) => (
+                {offers.map((o) => (
                   <li
                     key={o.id}
                     className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/70 bg-surface-raised px-4 py-3.5"
                   >
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold">
-                        {o.id} · {o.table}
+                      <p className="text-sm font-semibold">{o.id}</p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {o.detail} · {o.reach}
                       </p>
-                      <p className="truncate text-xs text-muted-foreground">{o.items}</p>
                     </div>
                     <div className="flex items-center gap-4">
-                      <span className="text-sm font-semibold">{o.total}</span>
+                      <span className="text-xs text-muted-foreground">{o.expiry}</span>
                       <span
                         className={`rounded-full border px-3 py-1 text-xs font-semibold ${stateStyles[o.state]}`}
                       >
@@ -163,13 +163,13 @@ function Dashboard() {
             </section>
 
             <section className="rounded-3xl border border-border bg-surface p-6">
-              <h2 className="text-lg font-semibold">Compliance</h2>
+              <h2 className="text-lg font-semibold">Venue setup</h2>
               <ul className="mt-5 space-y-4 text-sm">
                 {[
-                  ["Identity verified", "Cleared", true],
-                  ["Food hygiene rating", "5 — Very good", true],
-                  ["Public liability insurance", "Expires 14 Mar", true],
-                  ["Payout account", "Action needed", false],
+                  ["Location & radius", "400m · set", true],
+                  ["Website / menu link", "thecopperroom.co.uk", true],
+                  ["Offer photos", "6 uploaded", true],
+                  ["Opening hours", "Action needed", false],
                 ].map(([label, value, ok]) => (
                   <li key={label as string} className="flex items-start justify-between gap-4">
                     <span className="text-muted-foreground">{label}</span>
@@ -182,9 +182,10 @@ function Dashboard() {
                 ))}
               </ul>
               <button className="mt-7 w-full rounded-xl border border-border py-3 text-sm font-semibold transition-colors hover:bg-surface-raised">
-                Open compliance centre
+                Edit venue profile
               </button>
             </section>
+
           </div>
         </main>
       </div>
