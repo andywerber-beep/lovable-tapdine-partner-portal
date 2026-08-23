@@ -6,17 +6,17 @@ import phoneImg from "@/assets/tap-phone.jpg";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "TAPDINE — Fill Empty Tables, Tonight" },
+      { title: "TAPDINE — Send Your Offer to People Nearby" },
       {
         name: "description",
         content:
-          "TAPDINE connects nearby diners with your venue in real time. Join the partner network, manage menus, orders and payouts from one portal.",
+          "TAPDINE pings nearby customers with your time-limited offers. Cafés, coffee shops, sandwich bars and restaurants publish deals with photos in minutes.",
       },
-      { property: "og:title", content: "TAPDINE — Fill Empty Tables, Tonight" },
+      { property: "og:title", content: "TAPDINE — Send Your Offer to People Nearby" },
       {
         property: "og:description",
         content:
-          "Real-time diner discovery for restaurants. Onboard in minutes and run service from the TAPDINE partner portal.",
+          "Proximity deal pings for local venues. Publish an offer with a photo, set an expiry, and reach customers walking past.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -29,45 +29,46 @@ const steps = [
   {
     n: "01",
     title: "Create your venue account",
-    body: "Sign up with your venue email and we open a partner workspace instantly.",
+    body: "Coffee shop, café, sandwich bar, deli or restaurant — sign up and your workspace opens instantly.",
   },
   {
     n: "02",
-    title: "Verify once, trade forever",
-    body: "Upload ID, hygiene rating and insurance. Automated checks clear most venues same-day.",
+    title: "Add your venue details",
+    body: "Location, opening hours and a link to your own website or menu so customers can browse.",
   },
   {
     n: "03",
-    title: "Publish your menu",
-    body: "Build menus with photos, modifiers and live availability toggles.",
+    title: "Publish an offer",
+    body: "“10% off the lobster roll.” Add a photo, set a price and choose how long it stays live.",
   },
   {
     n: "04",
-    title: "Go live and get tapped",
-    body: "Diners nearby get a proximity ping. Orders land on your live board with payouts tracked.",
+    title: "Nearby customers get pinged",
+    body: "Anyone in range sees your deal on the map and gets a notification while it's still valid.",
   },
 ];
 
 const values = [
   {
-    title: "Proximity demand",
-    body: "We ping hungry people within walking distance the moment you have covers to fill.",
+    title: "Proximity pings",
+    body: "People walking within a few streets of you get your offer the moment you publish it.",
     stat: "≤ 400m",
-    label: "Average ping radius",
+    label: "Typical ping radius",
   },
   {
-    title: "No dead paperwork",
-    body: "Hygiene, insurance and identity checks are read automatically, not chased over email.",
-    stat: "Same day",
-    label: "Typical verification",
+    title: "Offers that expire",
+    body: "Set a window — two hours, one afternoon — and the deal retires itself. No stale vouchers.",
+    stat: "2 hrs",
+    label: "Common offer window",
   },
   {
-    title: "Money you can see",
-    body: "A running ledger of every order, fee and payout — reconciled without a spreadsheet.",
-    stat: "Daily",
-    label: "Payout cadence",
+    title: "Your menu, your site",
+    body: "Link your own website or menu so customers browse you properly before they walk in.",
+    stat: "1 link",
+    label: "Straight to your menu",
   },
 ];
+
 
 function Landing() {
   return (
