@@ -8,12 +8,12 @@ export const Route = createFileRoute("/dashboard")({
       {
         name: "description",
         content:
-          "A preview of the redesigned TAPDINE venue dashboard: live order board, covers, payouts and compliance status at a glance.",
+          "A preview of the redesigned TAPDINE venue dashboard: live offers with expiry countdowns, ping reach, redemptions and venue setup status.",
       },
       { property: "og:title", content: "Venue Dashboard Preview — TAPDINE" },
       {
         property: "og:description",
-        content: "Live orders, covers, payouts and compliance in one calm workspace.",
+        content: "Live offers, expiry timers, ping reach and redemptions in one calm workspace.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -22,28 +22,53 @@ export const Route = createFileRoute("/dashboard")({
   component: Dashboard,
 });
 
-const nav = ["Overview", "Live orders", "Menu", "Ledger", "Compliance", "Settings"];
+const nav = ["Overview", "Live offers", "Create offer", "Photos", "Venue profile", "Settings"];
 
 const stats = [
-  { label: "Covers tonight", value: "68", delta: "+12 vs last Sat" },
-  { label: "Gross sales", value: "£2,410", delta: "+8.4%" },
-  { label: "Avg. ticket", value: "£35.40", delta: "+£2.10" },
-  { label: "Next payout", value: "£1,986", delta: "Tomorrow 09:00" },
+  { label: "Pings sent today", value: "1,284", delta: "+18% vs yesterday" },
+  { label: "Offer views", value: "342", delta: "+9.4%" },
+  { label: "Redemptions", value: "57", delta: "16.7% of views" },
+  { label: "Live offers", value: "3", delta: "1 expiring soon" },
 ];
 
-const orders = [
-  { id: "#4821", table: "T4", items: "2× Sea bass, 1× Focaccia", total: "£48.00", state: "Preparing" },
-  { id: "#4822", table: "T9", items: "1× Ribeye, 2× Negroni", total: "£62.50", state: "New" },
-  { id: "#4823", table: "Bar 2", items: "3× Small plates", total: "£27.00", state: "Ready" },
-  { id: "#4824", table: "T1", items: "1× Tasting menu", total: "£85.00", state: "Served" },
+const offers = [
+  {
+    id: "Lobster roll",
+    detail: "10% off · £12.60 was £14.00",
+    reach: "612 pinged",
+    expiry: "Expires in 1h 42m",
+    state: "Live",
+  },
+  {
+    id: "Flat white + pastry",
+    detail: "Bundle · £4.50",
+    reach: "438 pinged",
+    expiry: "Expires in 26m",
+    state: "Ending soon",
+  },
+  {
+    id: "Lunch deli box",
+    detail: "20% off · £6.40 was £8.00",
+    reach: "234 pinged",
+    expiry: "Starts 11:30",
+    state: "Scheduled",
+  },
+  {
+    id: "Late espresso hour",
+    detail: "Buy one get one",
+    reach: "1,102 pinged",
+    expiry: "Ended 09:00",
+    state: "Expired",
+  },
 ];
 
 const stateStyles: Record<string, string> = {
-  New: "bg-brand-soft text-brand border-brand/40",
-  Preparing: "bg-warning/15 text-warning border-warning/40",
-  Ready: "bg-success/15 text-success border-success/40",
-  Served: "bg-muted text-muted-foreground border-border",
+  Live: "bg-success/15 text-success border-success/40",
+  "Ending soon": "bg-warning/15 text-warning border-warning/40",
+  Scheduled: "bg-brand-soft text-brand border-brand/40",
+  Expired: "bg-muted text-muted-foreground border-border",
 };
+
 
 function Dashboard() {
   return (
