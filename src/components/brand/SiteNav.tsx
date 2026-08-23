@@ -17,14 +17,18 @@ export function SiteNav() {
             Brand system
           </Link>
           <Link to="/dashboard" className="transition-colors hover:text-foreground">
-            Portal preview
+            Partner portal
           </Link>
           <Link to="/customer" className="transition-colors hover:text-foreground">
             Customer app
           </Link>
+          <Link to="/admin" className="transition-colors hover:text-foreground">
+            Admin desk
+          </Link>
         </nav>
         <Link
           to="/sign-in"
+          search={{}}
           className="rounded-full bg-brand px-5 py-2 text-sm font-semibold text-brand-foreground transition-transform hover:scale-[1.03]"
         >
           Partner sign in
