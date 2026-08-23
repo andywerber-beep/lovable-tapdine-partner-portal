@@ -10,8 +10,9 @@ export const Route = createFileRoute("/sign-in")({
       {
         name: "description",
         content:
-          "Sign in to the TAPDINE partner portal to manage your venue, menus, live orders and payouts.",
+          "Sign in to the TAPDINE partner portal to publish offers, add photos, set expiry times and link your menu.",
       },
+
       { property: "og:title", content: "Partner Sign In — TAPDINE" },
       {
         property: "og:description",
