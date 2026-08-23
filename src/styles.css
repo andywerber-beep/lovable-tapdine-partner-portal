@@ -238,3 +238,22 @@
   );
   background-size: 4px 4px;
 }
+
+@keyframes tapdine-pin-pulse {
+  0% { transform: scale(0.6); opacity: 0.75; }
+  70% { transform: scale(2.4); opacity: 0; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+
+@utility pin-pulse {
+  animation: tapdine-pin-pulse 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes tapdine-ping-in {
+  from { transform: translateY(-14px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@utility ping-in {
+  animation: tapdine-ping-in 0.5s ease-out both;
+}
