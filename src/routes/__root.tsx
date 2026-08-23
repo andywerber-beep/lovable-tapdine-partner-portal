@@ -81,14 +81,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "TAPDINE connects nearby diners with your venue in real time — menus, live orders, compliance and payouts in one partner portal.",
+          "TAPDINE pings nearby customers with time-limited offers from local venues — publish deals with photos and link your menu from one partner portal.",
       },
       { name: "author", content: "TAPDINE" },
       { property: "og:title", content: "TAPDINE Partner Portal" },
       {
         property: "og:description",
-        content: "Real-time diner discovery and venue operations for restaurant partners.",
+        content: "Proximity deal pings and offer management for local venue partners.",
       },
+
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
