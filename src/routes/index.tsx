@@ -80,7 +80,7 @@ function Landing() {
         <section className="relative overflow-hidden">
           <img
             src={heroImg}
-            alt="Chef plating dishes on a restaurant pass during service"
+            alt="Barista handing over a coffee and sandwich at a local counter"
             width={1600}
             height={1104}
             className="absolute inset-0 h-full w-full object-cover opacity-35"
@@ -88,16 +88,16 @@ function Landing() {
           <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/85 to-background" />
           <div className="relative mx-auto w-full max-w-6xl px-5 py-24 md:py-36">
             <span className="inline-flex items-center gap-2 rounded-full border border-brand/40 bg-brand-soft px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-brand">
-              Partner network
+              Venue partner network
             </span>
             <h1 className="mt-7 max-w-3xl text-5xl font-extrabold leading-[0.95] md:text-7xl">
-              Fill the tables you
-              <span className="text-brand"> already </span>
-              have.
+              Your offer, in the
+              <span className="text-brand"> pocket </span>
+              of everyone nearby.
             </h1>
             <p className="mt-6 max-w-xl text-lg text-muted-foreground">
-              TAPDINE puts your venue in front of diners standing minutes away — then runs
-              the whole service from one calm partner portal.
+              Cafés, coffee shops, sandwich bars and restaurants publish a time-limited deal —
+              TAPDINE pings the customers walking past before it expires.
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-4">
               <Link
@@ -115,9 +115,10 @@ function Landing() {
             </div>
             <dl className="mt-16 grid max-w-2xl grid-cols-2 gap-8 border-t border-border/60 pt-8 sm:grid-cols-3">
               {[
-                ["2,400+", "Diners pinged nightly"],
-                ["18 min", "Median first order"],
+                ["2,400+", "Customers pinged daily"],
+                ["2 hrs", "Typical offer window"],
                 ["0%", "Setup fee"],
+
               ].map(([v, l]) => (
                 <div key={l}>
                   <dt className="font-display text-3xl font-bold text-foreground">{v}</dt>
