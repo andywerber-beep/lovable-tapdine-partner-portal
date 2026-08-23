@@ -257,3 +257,47 @@
 @utility ping-in {
   animation: tapdine-ping-in 0.5s ease-out both;
 }
+
+/* Leaflet map markers */
+.tapdine-pin-dot {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  background: var(--brand);
+  border: 2px solid oklch(0.17 0.01 30);
+  box-shadow: 0 4px 12px oklch(0 0 0 / 45%);
+}
+.tapdine-pin-dot.is-live {
+  background: var(--success);
+}
+.tapdine-pin-dot.is-live::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: var(--success);
+  animation: tapdine-pin-pulse 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+.tapdine-pin-me {
+  display: block;
+  width: 14px;
+  height: 14px;
+  border-radius: 9999px;
+  background: oklch(0.72 0.1 240);
+  border: 3px solid white;
+  box-shadow: 0 0 0 4px oklch(0.72 0.1 240 / 30%);
+}
+.leaflet-container {
+  background: oklch(0.18 0.01 250);
+  font-family: var(--font-sans);
+}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: var(--surface-raised);
+  color: var(--foreground);
+  border-radius: 14px;
+}
+.tapdine-popup .live { color: var(--success); font-weight: 600; }
+.tapdine-popup .until { color: var(--warning); font-size: 11px; }
+.tapdine-popup a { color: var(--brand); }
