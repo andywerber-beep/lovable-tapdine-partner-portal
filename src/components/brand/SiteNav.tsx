@@ -19,6 +19,9 @@ export function SiteNav() {
           <Link to="/dashboard" className="transition-colors hover:text-foreground">
             Portal preview
           </Link>
+          <Link to="/customer" className="transition-colors hover:text-foreground">
+            Customer app
+          </Link>
         </nav>
         <Link
           to="/sign-in"
