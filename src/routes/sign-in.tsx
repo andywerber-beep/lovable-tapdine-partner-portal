@@ -1,9 +1,13 @@
 import { useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Logo } from "@/components/brand/Logo";
+import { supabase } from "@/integrations/supabase/client";
 import heroImg from "@/assets/hero-service.jpg";
 
 export const Route = createFileRoute("/sign-in")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    redirect: typeof search['redirect'] === "string" ? (search['redirect'] as string) : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Partner Sign In — TAPDINE" },
@@ -12,7 +16,6 @@ export const Route = createFileRoute("/sign-in")({
         content:
           "Sign in to the TAPDINE partner portal to publish offers, add photos, set expiry times and link your menu.",
       },
-
       { property: "og:title", content: "Partner Sign In — TAPDINE" },
       {
         property: "og:description",
@@ -26,12 +29,45 @@ export const Route = createFileRoute("/sign-in")({
 });
 
 function SignIn() {
+  const navigate = useNavigate();
+  const { redirect } = Route.useSearch();
   const [mode, setMode] = useState<"in" | "up">("in");
   const [show, setShow] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setError(null);
+    setNotice(null);
+    try {
+      if (mode === "in") {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        navigate({ to: (redirect as "/dashboard") ?? "/dashboard" });
+      } else {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+        });
+        if (error) throw error;
+        setNotice("Account created. Check your inbox to confirm, then sign in.");
+        setMode("in");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong.");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
     <div className="grid min-h-screen bg-background lg:grid-cols-[1.1fr_1fr]">
-      {/* Brand panel */}
       <div className="relative hidden overflow-hidden lg:block">
         <img
           src={heroImg}
@@ -48,15 +84,13 @@ function SignIn() {
               One offer. Everyone nearby.
             </h2>
             <p className="mt-5 max-w-sm text-muted-foreground">
-              Publish a deal with a photo, set how long it runs, and link your menu — the
-              pings do the rest.
+              Publish a deal with a photo, set how long it runs, and link your menu — the pings do
+              the rest.
             </p>
           </div>
-
         </div>
       </div>
 
-      {/* Form panel */}
       <div className="flex items-center justify-center px-5 py-14">
         <div className="w-full max-w-sm">
           <div className="lg:hidden">
@@ -68,16 +102,11 @@ function SignIn() {
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
             {mode === "in"
-              ? "Sign in to your partner workspace."
+              ? "Sign in to your partner workspace or the admin desk."
               : "Ten minutes to onboarding, no setup fee."}
           </p>
 
-          <form
-            className="mt-9 space-y-5"
-            onSubmit={(e) => {
-              e.preventDefault();
-            }}
-          >
+          <form className="mt-9 space-y-5" onSubmit={onSubmit}>
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium text-muted-foreground">
                 Email address
@@ -85,6 +114,9 @@ function SignIn() {
               <input
                 id="email"
                 type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="venue@example.com"
                 className="w-full rounded-xl border border-input bg-surface px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 focus:border-brand"
               />
@@ -98,6 +130,10 @@ function SignIn() {
                 <input
                   id="pw"
                   type={show ? "text" : "password"}
+                  required
+                  minLength={6}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   className="w-full rounded-xl border border-input bg-surface px-4 py-3 pr-16 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 focus:border-brand"
                 />
@@ -111,11 +147,15 @@ function SignIn() {
               </div>
             </div>
 
+            {error && <p className="text-sm text-brand">{error}</p>}
+            {notice && <p className="text-sm text-success">{notice}</p>}
+
             <button
               type="submit"
-              className="glow w-full rounded-xl bg-brand py-3.5 text-sm font-semibold text-brand-foreground transition-transform hover:scale-[1.01]"
+              disabled={busy}
+              className="glow w-full rounded-xl bg-brand py-3.5 text-sm font-semibold text-brand-foreground transition-transform hover:scale-[1.01] disabled:opacity-50"
             >
-              {mode === "in" ? "Sign in to partner portal" : "Register account"}
+              {busy ? "Please wait…" : mode === "in" ? "Sign in" : "Register account"}
             </button>
           </form>
 
