@@ -132,8 +132,9 @@ function Landing() {
         {/* Value */}
         <section id="value" className="mx-auto w-full max-w-6xl px-5 py-24">
           <h2 className="max-w-2xl text-4xl font-bold md:text-5xl">
-            Built for the hour before the rush.
+            Built for the quiet hour you want to fill.
           </h2>
+
           <div className="mt-14 grid gap-6 md:grid-cols-3">
             {values.map((v) => (
               <article
