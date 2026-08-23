@@ -156,10 +156,11 @@ function Landing() {
         <section id="how" className="border-y border-border/60 bg-surface/40">
           <div className="mx-auto grid w-full max-w-6xl gap-14 px-5 py-24 lg:grid-cols-2 lg:items-center">
             <div>
-              <h2 className="text-4xl font-bold md:text-5xl">From signup to service</h2>
+              <h2 className="text-4xl font-bold md:text-5xl">From signup to first ping</h2>
               <p className="mt-4 max-w-md text-muted-foreground">
                 Four steps, no sales call, no integration project.
               </p>
+
               <ol className="mt-10 space-y-8">
                 {steps.map((s) => (
                   <li key={s.n} className="flex gap-5">
