@@ -102,6 +102,7 @@ function Landing() {
             <div className="mt-10 flex flex-wrap items-center gap-4">
               <Link
                 to="/sign-in"
+                search={{}}
                 className="glow rounded-full bg-brand px-7 py-3.5 text-base font-semibold text-brand-foreground transition-transform hover:scale-[1.03]"
               >
                 Become a partner
@@ -197,6 +198,7 @@ function Landing() {
 
           <Link
             to="/sign-in"
+            search={{}}
             className="glow mt-10 inline-block rounded-full bg-brand px-9 py-4 text-base font-semibold text-brand-foreground transition-transform hover:scale-[1.03]"
           >
             Create your partner account
