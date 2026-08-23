@@ -2,7 +2,7 @@ import { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ClientOnly } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { SiteNav, SiteFooter } from "@/components/brand/SiteNav";
+import { Logo } from "@/components/brand/Logo";
 import {
   fetchPublicVenues,
   timeLeft,
@@ -82,7 +82,11 @@ function CustomerApp() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <SiteNav />
+      <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-5">
+          <Logo size={30} subtitle="Deals near you" />
+        </div>
+      </header>
       <main className="mx-auto w-full max-w-6xl px-5 py-12 md:py-16">
         <span className="inline-flex items-center gap-2 rounded-full border border-success/40 bg-success/15 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-success">
           Customer app
@@ -199,7 +203,11 @@ function CustomerApp() {
           </aside>
         </div>
       </main>
-      <SiteFooter />
+      <footer className="border-t border-border/60 bg-surface/40">
+        <div className="mx-auto w-full max-w-6xl px-5 py-10 text-sm text-muted-foreground">
+          © {new Date().getFullYear()} TAPDINE
+        </div>
+      </footer>
     </div>
   );
 }
