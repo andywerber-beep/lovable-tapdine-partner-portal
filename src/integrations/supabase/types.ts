@@ -14,16 +14,154 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      offers: {
+        Row: {
+          created_at: string
+          description: string | null
+          expires_at: string
+          id: string
+          image_url: string | null
+          price_text: string | null
+          starts_at: string
+          title: string
+          venue_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          expires_at: string
+          id?: string
+          image_url?: string | null
+          price_text?: string | null
+          starts_at?: string
+          title: string
+          venue_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          expires_at?: string
+          id?: string
+          image_url?: string | null
+          price_text?: string | null
+          starts_at?: string
+          title?: string
+          venue_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offers_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      venues: {
+        Row: {
+          address: string
+          category: string
+          created_at: string
+          hygiene_rating: number | null
+          id: string
+          insurance_doc_path: string | null
+          insurance_expiry: string | null
+          insurance_verified_at: string | null
+          insurance_verified_by: string | null
+          lat: number
+          lng: number
+          menu_url: string | null
+          name: string
+          owner_id: string | null
+          phone: string | null
+          review_note: string | null
+          status: Database["public"]["Enums"]["venue_status"]
+          updated_at: string
+          website_url: string | null
+        }
+        Insert: {
+          address?: string
+          category?: string
+          created_at?: string
+          hygiene_rating?: number | null
+          id?: string
+          insurance_doc_path?: string | null
+          insurance_expiry?: string | null
+          insurance_verified_at?: string | null
+          insurance_verified_by?: string | null
+          lat: number
+          lng: number
+          menu_url?: string | null
+          name: string
+          owner_id?: string | null
+          phone?: string | null
+          review_note?: string | null
+          status?: Database["public"]["Enums"]["venue_status"]
+          updated_at?: string
+          website_url?: string | null
+        }
+        Update: {
+          address?: string
+          category?: string
+          created_at?: string
+          hygiene_rating?: number | null
+          id?: string
+          insurance_doc_path?: string | null
+          insurance_expiry?: string | null
+          insurance_verified_at?: string | null
+          insurance_verified_by?: string | null
+          lat?: number
+          lng?: number
+          menu_url?: string | null
+          name?: string
+          owner_id?: string | null
+          phone?: string | null
+          review_note?: string | null
+          status?: Database["public"]["Enums"]["venue_status"]
+          updated_at?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      claim_admin: { Args: never; Returns: boolean }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "partner"
+      venue_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +288,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "partner"],
+      venue_status: ["pending", "approved", "rejected"],
+    },
   },
 } as const
