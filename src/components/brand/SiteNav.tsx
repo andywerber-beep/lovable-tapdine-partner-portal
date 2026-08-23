@@ -16,15 +16,6 @@ export function SiteNav() {
           <Link to="/brand" className="transition-colors hover:text-foreground">
             Brand system
           </Link>
-          <Link to="/dashboard" className="transition-colors hover:text-foreground">
-            Partner portal
-          </Link>
-          <Link to="/customer" className="transition-colors hover:text-foreground">
-            Customer app
-          </Link>
-          <Link to="/admin" className="transition-colors hover:text-foreground">
-            Admin desk
-          </Link>
         </nav>
         <Link
           to="/sign-in"
