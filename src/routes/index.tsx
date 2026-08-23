@@ -177,7 +177,7 @@ function Landing() {
             </div>
             <img
               src={phoneImg}
-              alt="Diner receiving a TAPDINE proximity ping at a restaurant table"
+              alt="Customer receiving a TAPDINE proximity offer ping on their phone"
               loading="lazy"
               width={1200}
               height={912}
@@ -189,11 +189,12 @@ function Landing() {
         {/* CTA */}
         <section className="mx-auto w-full max-w-6xl px-5 py-28 text-center">
           <h2 className="mx-auto max-w-2xl text-4xl font-bold md:text-6xl">
-            Your next full house starts with a tap.
+            Your next busy hour starts with one offer.
           </h2>
           <p className="mx-auto mt-5 max-w-lg text-muted-foreground">
-            Join venues already trading on TAPDINE. Onboarding takes about ten minutes.
+            Join the venues already pinging customers on TAPDINE. Setup takes about ten minutes.
           </p>
+
           <Link
             to="/sign-in"
             className="glow mt-10 inline-block rounded-full bg-brand px-9 py-4 text-base font-semibold text-brand-foreground transition-transform hover:scale-[1.03]"
