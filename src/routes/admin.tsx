@@ -220,11 +220,21 @@ function AdminBoard({ email, adminId }: { email: string; adminId: string }) {
   );
 }
 
-function Stat({ label, value, tone }: { label: string; value: number; tone: string }) {
+function Stat({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: number;
+  tone: "warning" | "success" | "brand";
+}) {
+  const toneClass =
+    tone === "warning" ? "text-warning" : tone === "success" ? "text-success" : "text-brand";
   return (
     <div className="rounded-2xl border border-border bg-surface p-5">
       <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
-      <p className={`mt-2 text-3xl font-extrabold text-${tone}`}>{value}</p>
+      <p className={`mt-2 text-3xl font-extrabold ${toneClass}`}>{value}</p>
     </div>
   );
 }
