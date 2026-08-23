@@ -33,8 +33,8 @@ export default function VenueMap({ venues, center, selectedId, onSelect }: Props
       zoomControl: false,
       attributionControl: true,
     });
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-      attribution: "&copy; OpenStreetMap &copy; CARTO",
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "&copy; OpenStreetMap contributors",
       maxZoom: 19,
     }).addTo(map);
     L.circle(center, {
