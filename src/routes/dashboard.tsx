@@ -8,12 +8,12 @@ export const Route = createFileRoute("/dashboard")({
       {
         name: "description",
         content:
-          "A preview of the redesigned TAPDINE venue dashboard: live order board, covers, payouts and compliance status at a glance.",
+          "A preview of the redesigned TAPDINE venue dashboard: live offers with expiry countdowns, ping reach, redemptions and venue setup status.",
       },
       { property: "og:title", content: "Venue Dashboard Preview — TAPDINE" },
       {
         property: "og:description",
-        content: "Live orders, covers, payouts and compliance in one calm workspace.",
+        content: "Live offers, expiry timers, ping reach and redemptions in one calm workspace.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -22,28 +22,53 @@ export const Route = createFileRoute("/dashboard")({
   component: Dashboard,
 });
 
-const nav = ["Overview", "Live orders", "Menu", "Ledger", "Compliance", "Settings"];
+const nav = ["Overview", "Live offers", "Create offer", "Photos", "Venue profile", "Settings"];
 
 const stats = [
-  { label: "Covers tonight", value: "68", delta: "+12 vs last Sat" },
-  { label: "Gross sales", value: "£2,410", delta: "+8.4%" },
-  { label: "Avg. ticket", value: "£35.40", delta: "+£2.10" },
-  { label: "Next payout", value: "£1,986", delta: "Tomorrow 09:00" },
+  { label: "Pings sent today", value: "1,284", delta: "+18% vs yesterday" },
+  { label: "Offer views", value: "342", delta: "+9.4%" },
+  { label: "Redemptions", value: "57", delta: "16.7% of views" },
+  { label: "Live offers", value: "3", delta: "1 expiring soon" },
 ];
 
-const orders = [
-  { id: "#4821", table: "T4", items: "2× Sea bass, 1× Focaccia", total: "£48.00", state: "Preparing" },
-  { id: "#4822", table: "T9", items: "1× Ribeye, 2× Negroni", total: "£62.50", state: "New" },
-  { id: "#4823", table: "Bar 2", items: "3× Small plates", total: "£27.00", state: "Ready" },
-  { id: "#4824", table: "T1", items: "1× Tasting menu", total: "£85.00", state: "Served" },
+const offers = [
+  {
+    id: "Lobster roll",
+    detail: "10% off · £12.60 was £14.00",
+    reach: "612 pinged",
+    expiry: "Expires in 1h 42m",
+    state: "Live",
+  },
+  {
+    id: "Flat white + pastry",
+    detail: "Bundle · £4.50",
+    reach: "438 pinged",
+    expiry: "Expires in 26m",
+    state: "Ending soon",
+  },
+  {
+    id: "Lunch deli box",
+    detail: "20% off · £6.40 was £8.00",
+    reach: "234 pinged",
+    expiry: "Starts 11:30",
+    state: "Scheduled",
+  },
+  {
+    id: "Late espresso hour",
+    detail: "Buy one get one",
+    reach: "1,102 pinged",
+    expiry: "Ended 09:00",
+    state: "Expired",
+  },
 ];
 
 const stateStyles: Record<string, string> = {
-  New: "bg-brand-soft text-brand border-brand/40",
-  Preparing: "bg-warning/15 text-warning border-warning/40",
-  Ready: "bg-success/15 text-success border-success/40",
-  Served: "bg-muted text-muted-foreground border-border",
+  Live: "bg-success/15 text-success border-success/40",
+  "Ending soon": "bg-warning/15 text-warning border-warning/40",
+  Scheduled: "bg-brand-soft text-brand border-brand/40",
+  Expired: "bg-muted text-muted-foreground border-border",
 };
+
 
 function Dashboard() {
   return (
@@ -79,17 +104,17 @@ function Dashboard() {
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
-                Saturday service
+                Coffee shop · Central
               </p>
               <h1 className="mt-2 text-3xl font-bold md:text-4xl">The Copper Room</h1>
             </div>
             <div className="flex items-center gap-3">
               <span className="inline-flex items-center gap-2 rounded-full border border-success/40 bg-success/15 px-4 py-1.5 text-xs font-semibold text-success">
                 <span className="h-2 w-2 rounded-full bg-success" />
-                Accepting orders
+                Pings on
               </span>
               <button className="rounded-full bg-brand px-5 py-2 text-sm font-semibold text-brand-foreground">
-                Pause service
+                New offer
               </button>
             </div>
           </div>
@@ -109,23 +134,23 @@ function Dashboard() {
           <div className="mt-6 grid gap-6 xl:grid-cols-[1.6fr_1fr]">
             <section className="rounded-3xl border border-border bg-surface p-6">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold">Live order board</h2>
+                <h2 className="text-lg font-semibold">Offer board</h2>
                 <span className="text-xs text-muted-foreground">Updated just now</span>
               </div>
               <ul className="mt-5 space-y-3">
-                {orders.map((o) => (
+                {offers.map((o) => (
                   <li
                     key={o.id}
                     className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/70 bg-surface-raised px-4 py-3.5"
                   >
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold">
-                        {o.id} · {o.table}
+                      <p className="text-sm font-semibold">{o.id}</p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {o.detail} · {o.reach}
                       </p>
-                      <p className="truncate text-xs text-muted-foreground">{o.items}</p>
                     </div>
                     <div className="flex items-center gap-4">
-                      <span className="text-sm font-semibold">{o.total}</span>
+                      <span className="text-xs text-muted-foreground">{o.expiry}</span>
                       <span
                         className={`rounded-full border px-3 py-1 text-xs font-semibold ${stateStyles[o.state]}`}
                       >
@@ -138,13 +163,13 @@ function Dashboard() {
             </section>
 
             <section className="rounded-3xl border border-border bg-surface p-6">
-              <h2 className="text-lg font-semibold">Compliance</h2>
+              <h2 className="text-lg font-semibold">Venue setup</h2>
               <ul className="mt-5 space-y-4 text-sm">
                 {[
-                  ["Identity verified", "Cleared", true],
-                  ["Food hygiene rating", "5 — Very good", true],
-                  ["Public liability insurance", "Expires 14 Mar", true],
-                  ["Payout account", "Action needed", false],
+                  ["Location & radius", "400m · set", true],
+                  ["Website / menu link", "thecopperroom.co.uk", true],
+                  ["Offer photos", "6 uploaded", true],
+                  ["Opening hours", "Action needed", false],
                 ].map(([label, value, ok]) => (
                   <li key={label as string} className="flex items-start justify-between gap-4">
                     <span className="text-muted-foreground">{label}</span>
@@ -157,9 +182,10 @@ function Dashboard() {
                 ))}
               </ul>
               <button className="mt-7 w-full rounded-xl border border-border py-3 text-sm font-semibold transition-colors hover:bg-surface-raised">
-                Open compliance centre
+                Edit venue profile
               </button>
             </section>
+
           </div>
         </main>
       </div>

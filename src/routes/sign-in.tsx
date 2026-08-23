@@ -10,8 +10,9 @@ export const Route = createFileRoute("/sign-in")({
       {
         name: "description",
         content:
-          "Sign in to the TAPDINE partner portal to manage your venue, menus, live orders and payouts.",
+          "Sign in to the TAPDINE partner portal to publish offers, add photos, set expiry times and link your menu.",
       },
+
       { property: "og:title", content: "Partner Sign In — TAPDINE" },
       {
         property: "og:description",
@@ -34,7 +35,7 @@ function SignIn() {
       <div className="relative hidden overflow-hidden lg:block">
         <img
           src={heroImg}
-          alt="Restaurant kitchen pass during evening service"
+          alt="Coffee shop counter with pastries during a busy morning"
           width={1600}
           height={1104}
           className="absolute inset-0 h-full w-full object-cover opacity-45"
@@ -44,13 +45,14 @@ function SignIn() {
           <Logo size={32} subtitle="Partner Portal" />
           <div>
             <h2 className="max-w-md text-5xl font-bold leading-[1.02]">
-              Every cover counts.
+              One offer. Everyone nearby.
             </h2>
             <p className="mt-5 max-w-sm text-muted-foreground">
-              Menus, live orders, compliance and payouts — one workspace, built around the
-              rhythm of service.
+              Publish a deal with a photo, set how long it runs, and link your menu — the
+              pings do the rest.
             </p>
           </div>
+
         </div>
       </div>
 

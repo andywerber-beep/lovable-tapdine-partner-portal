@@ -80,7 +80,7 @@ function Landing() {
         <section className="relative overflow-hidden">
           <img
             src={heroImg}
-            alt="Chef plating dishes on a restaurant pass during service"
+            alt="Barista handing over a coffee and sandwich at a local counter"
             width={1600}
             height={1104}
             className="absolute inset-0 h-full w-full object-cover opacity-35"
@@ -88,16 +88,16 @@ function Landing() {
           <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/85 to-background" />
           <div className="relative mx-auto w-full max-w-6xl px-5 py-24 md:py-36">
             <span className="inline-flex items-center gap-2 rounded-full border border-brand/40 bg-brand-soft px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-brand">
-              Partner network
+              Venue partner network
             </span>
             <h1 className="mt-7 max-w-3xl text-5xl font-extrabold leading-[0.95] md:text-7xl">
-              Fill the tables you
-              <span className="text-brand"> already </span>
-              have.
+              Your offer, in the
+              <span className="text-brand"> pocket </span>
+              of everyone nearby.
             </h1>
             <p className="mt-6 max-w-xl text-lg text-muted-foreground">
-              TAPDINE puts your venue in front of diners standing minutes away — then runs
-              the whole service from one calm partner portal.
+              Cafés, coffee shops, sandwich bars and restaurants publish a time-limited deal —
+              TAPDINE pings the customers walking past before it expires.
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-4">
               <Link
@@ -115,9 +115,10 @@ function Landing() {
             </div>
             <dl className="mt-16 grid max-w-2xl grid-cols-2 gap-8 border-t border-border/60 pt-8 sm:grid-cols-3">
               {[
-                ["2,400+", "Diners pinged nightly"],
-                ["18 min", "Median first order"],
+                ["2,400+", "Customers pinged daily"],
+                ["2 hrs", "Typical offer window"],
                 ["0%", "Setup fee"],
+
               ].map(([v, l]) => (
                 <div key={l}>
                   <dt className="font-display text-3xl font-bold text-foreground">{v}</dt>
@@ -131,8 +132,9 @@ function Landing() {
         {/* Value */}
         <section id="value" className="mx-auto w-full max-w-6xl px-5 py-24">
           <h2 className="max-w-2xl text-4xl font-bold md:text-5xl">
-            Built for the hour before the rush.
+            Built for the quiet hour you want to fill.
           </h2>
+
           <div className="mt-14 grid gap-6 md:grid-cols-3">
             {values.map((v) => (
               <article
@@ -154,10 +156,11 @@ function Landing() {
         <section id="how" className="border-y border-border/60 bg-surface/40">
           <div className="mx-auto grid w-full max-w-6xl gap-14 px-5 py-24 lg:grid-cols-2 lg:items-center">
             <div>
-              <h2 className="text-4xl font-bold md:text-5xl">From signup to service</h2>
+              <h2 className="text-4xl font-bold md:text-5xl">From signup to first ping</h2>
               <p className="mt-4 max-w-md text-muted-foreground">
                 Four steps, no sales call, no integration project.
               </p>
+
               <ol className="mt-10 space-y-8">
                 {steps.map((s) => (
                   <li key={s.n} className="flex gap-5">
@@ -174,7 +177,7 @@ function Landing() {
             </div>
             <img
               src={phoneImg}
-              alt="Diner receiving a TAPDINE proximity ping at a restaurant table"
+              alt="Customer receiving a TAPDINE proximity offer ping on their phone"
               loading="lazy"
               width={1200}
               height={912}
@@ -186,11 +189,12 @@ function Landing() {
         {/* CTA */}
         <section className="mx-auto w-full max-w-6xl px-5 py-28 text-center">
           <h2 className="mx-auto max-w-2xl text-4xl font-bold md:text-6xl">
-            Your next full house starts with a tap.
+            Your next busy hour starts with one offer.
           </h2>
           <p className="mx-auto mt-5 max-w-lg text-muted-foreground">
-            Join venues already trading on TAPDINE. Onboarding takes about ten minutes.
+            Join the venues already pinging customers on TAPDINE. Setup takes about ten minutes.
           </p>
+
           <Link
             to="/sign-in"
             className="glow mt-10 inline-block rounded-full bg-brand px-9 py-4 text-base font-semibold text-brand-foreground transition-transform hover:scale-[1.03]"
