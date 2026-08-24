@@ -258,8 +258,9 @@
   animation: tapdine-ping-in 0.5s ease-out both;
 }
 
-/* Leaflet map markers */
+/* Google Maps markers */
 .tapdine-pin-dot {
+  position: relative;
   display: block;
   width: 16px;
   height: 16px;
@@ -267,6 +268,7 @@
   background: var(--brand);
   border: 2px solid oklch(0.17 0.01 30);
   box-shadow: 0 4px 12px oklch(0 0 0 / 45%);
+  cursor: pointer;
 }
 .tapdine-pin-dot.is-live {
   background: var(--success);
@@ -274,7 +276,7 @@
 .tapdine-pin-dot.is-live::after {
   content: "";
   position: absolute;
-  inset: 0;
+  inset: -2px;
   border-radius: 9999px;
   background: var(--success);
   animation: tapdine-pin-pulse 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
@@ -288,16 +290,8 @@
   border: 3px solid white;
   box-shadow: 0 0 0 4px oklch(0.72 0.1 240 / 30%);
 }
-.leaflet-container {
-  background: oklch(0.95 0.01 250);
-  font-family: var(--font-sans);
-}
-.leaflet-popup-content-wrapper,
-.leaflet-popup-tip {
-  background: var(--surface-raised);
-  color: var(--foreground);
-  border-radius: 14px;
-}
-.tapdine-popup .live { color: var(--success); font-weight: 600; }
-.tapdine-popup .until { color: var(--warning); font-size: 11px; }
-.tapdine-popup a { color: var(--brand); }
+.tapdine-popup { color: #1a1a1a; font-family: var(--font-sans); font-size: 13px; }
+.tapdine-popup .live { color: oklch(0.55 0.15 150); font-weight: 600; }
+.tapdine-popup .until { color: oklch(0.55 0.16 65); font-size: 11px; }
+.tapdine-popup a { color: oklch(0.55 0.18 30); }
+
