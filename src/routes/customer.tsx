@@ -186,20 +186,6 @@ function CustomerApp() {
               ))}
             </ul>
 
-            <div className="mt-8 flex flex-col gap-2">
-              <Link
-                to="/dashboard"
-                className="rounded-full bg-brand px-5 py-2.5 text-center text-sm font-semibold text-brand-foreground"
-              >
-                Partner portal
-              </Link>
-              <Link
-                to="/admin"
-                className="rounded-full border border-border px-5 py-2.5 text-center text-sm font-semibold"
-              >
-                Admin desk
-              </Link>
-            </div>
           </aside>
         </div>
       </main>
