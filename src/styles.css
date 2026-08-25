@@ -5,17 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Design system definition.
- *
- * The @theme inline block maps CSS custom properties to Tailwind utility
- * classes (e.g. --color-primary -> bg-primary, text-primary).
- *
- * The :root and .dark blocks define the actual color values using oklch.
- * All colors MUST use oklch format.
- *
- * To add a new semantic color:
- * 1. Add the variable to :root (light value) and .dark (dark value)
- * 2. Register it in @theme inline as --color-<name>: var(--<name>)
+ * Tapdine unified design system — Forest & Moss
  */
 
 @theme inline {
@@ -26,6 +16,11 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+
+  --font-sans: var(--font-body);
+  --font-heading: var(--font-display);
+  --font-display: var(--font-display);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -42,6 +37,8 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -59,77 +56,112 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Tapdine aliases used across the partner portal */
+  --color-brand: var(--primary);
+  --color-brand-foreground: var(--primary-foreground);
+  --color-brand-soft: var(--brand-soft);
+  --color-ember: var(--warning);
+  --color-cream: var(--background);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
 }
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
+  --font-body: "Figtree", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
+
+  /* Forest & Moss — light mode */
+  --background: oklch(0.964 0.007 88.643);
+  --foreground: oklch(0.325 0.052 158.525);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
+  --card-foreground: oklch(0.325 0.052 158.525);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
+  --popover-foreground: oklch(0.325 0.052 158.525);
+  --primary: oklch(0.586 0.087 145.333);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.783 0.067 142.901);
+  --secondary-foreground: oklch(0.325 0.052 158.525);
+  --muted: oklch(0.92 0.01 81.795);
+  --muted-foreground: oklch(0.434 0.062 145.901);
+  --accent: oklch(0.783 0.067 142.901);
+  --accent-foreground: oklch(0.325 0.052 158.525);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.984 0.003 247.858);
-  --sidebar-foreground: oklch(0.129 0.042 264.695);
-  --sidebar-primary: oklch(0.208 0.042 265.755);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.968 0.007 247.896);
-  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
-  --sidebar-border: oklch(0.929 0.013 255.508);
-  --sidebar-ring: oklch(0.704 0.04 256.788);
+  --warning: oklch(0.75 0.15 80);
+  --warning-foreground: oklch(0.25 0.05 80);
+  --border: oklch(0.92 0.01 81.795);
+  --input: oklch(0.92 0.01 81.795);
+  --ring: oklch(0.586 0.087 145.333);
+  --chart-1: oklch(0.586 0.087 145.333);
+  --chart-2: oklch(0.783 0.067 142.901);
+  --chart-3: oklch(0.434 0.062 145.901);
+  --chart-4: oklch(0.75 0.15 80);
+  --chart-5: oklch(0.577 0.245 27.325);
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: oklch(0.325 0.052 158.525);
+  --sidebar-primary: oklch(0.586 0.087 145.333);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.92 0.01 81.795);
+  --sidebar-accent-foreground: oklch(0.325 0.052 158.525);
+  --sidebar-border: oklch(0.92 0.01 81.795);
+  --sidebar-ring: oklch(0.586 0.087 145.333);
+
+  /* Tapdine extras */
+  --surface: oklch(1 0 0);
+  --surface-raised: oklch(0.98 0.005 88.643);
+  --brand-soft: oklch(0.586 0.087 145.333 / 12%);
+  --success: oklch(0.586 0.087 145.333);
+  --success-foreground: oklch(1 0 0);
+  --shadow-glow: 0 24px 70px -30px oklch(0.586 0.087 145.333 / 45%);
 }
 
 .dark {
-  --background: oklch(0.129 0.042 264.695);
-  --foreground: oklch(0.984 0.003 247.858);
-  --card: oklch(0.208 0.042 265.755);
-  --card-foreground: oklch(0.984 0.003 247.858);
-  --popover: oklch(0.208 0.042 265.755);
-  --popover-foreground: oklch(0.984 0.003 247.858);
-  --primary: oklch(0.929 0.013 255.508);
-  --primary-foreground: oklch(0.208 0.042 265.755);
-  --secondary: oklch(0.279 0.041 260.031);
-  --secondary-foreground: oklch(0.984 0.003 247.858);
-  --muted: oklch(0.279 0.041 260.031);
-  --muted-foreground: oklch(0.704 0.04 256.788);
-  --accent: oklch(0.279 0.041 260.031);
-  --accent-foreground: oklch(0.984 0.003 247.858);
+  /* Forest & Moss — dark mode */
+  --background: oklch(0.25 0.05 158.525);
+  --foreground: oklch(0.964 0.007 88.643);
+  --card: oklch(0.325 0.052 158.525);
+  --card-foreground: oklch(0.964 0.007 88.643);
+  --popover: oklch(0.325 0.052 158.525);
+  --popover-foreground: oklch(0.964 0.007 88.643);
+  --primary: oklch(0.783 0.067 142.901);
+  --primary-foreground: oklch(0.25 0.05 158.525);
+  --secondary: oklch(0.434 0.062 145.901);
+  --secondary-foreground: oklch(0.964 0.007 88.643);
+  --muted: oklch(0.434 0.062 145.901);
+  --muted-foreground: oklch(0.783 0.067 142.901);
+  --accent: oklch(0.434 0.062 145.901);
+  --accent-foreground: oklch(0.964 0.007 88.643);
   --destructive: oklch(0.704 0.191 22.216);
   --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.551 0.027 264.364);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.208 0.042 265.755);
-  --sidebar-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.279 0.041 260.031);
-  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.551 0.027 264.364);
+  --warning: oklch(0.75 0.15 80);
+  --warning-foreground: oklch(0.25 0.05 80);
+  --border: oklch(0.964 0.007 88.643 / 15%);
+  --input: oklch(0.964 0.007 88.643 / 20%);
+  --ring: oklch(0.783 0.067 142.901);
+  --chart-1: oklch(0.783 0.067 142.901);
+  --chart-2: oklch(0.586 0.087 145.333);
+  --chart-3: oklch(0.434 0.062 145.901);
+  --chart-4: oklch(0.75 0.15 80);
+  --chart-5: oklch(0.704 0.191 22.216);
+  --sidebar: oklch(0.325 0.052 158.525);
+  --sidebar-foreground: oklch(0.964 0.007 88.643);
+  --sidebar-primary: oklch(0.783 0.067 142.901);
+  --sidebar-primary-foreground: oklch(0.25 0.05 158.525);
+  --sidebar-accent: oklch(0.434 0.062 145.901);
+  --sidebar-accent-foreground: oklch(0.964 0.007 88.643);
+  --sidebar-border: oklch(0.964 0.007 88.643 / 15%);
+  --sidebar-ring: oklch(0.783 0.067 142.901);
+
+  --surface: oklch(0.325 0.052 158.525);
+  --surface-raised: oklch(0.375 0.055 158.525);
+  --brand-soft: oklch(0.783 0.067 142.901 / 16%);
+  --success: oklch(0.783 0.067 142.901);
+  --success-foreground: oklch(0.25 0.05 158.525);
+  --shadow-glow: 0 24px 70px -30px oklch(0.783 0.067 142.901 / 45%);
 }
 
 @layer base {
@@ -140,90 +172,13 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
-  }
-}
-
-/* ============================================================
-   TAPDINE brand system — dark-first, coral accent, warm neutrals
-   ============================================================ */
-@theme inline {
-  --font-display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
-  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
-  --color-brand: var(--brand);
-  --color-brand-foreground: var(--brand-foreground);
-  --color-brand-soft: var(--brand-soft);
-  --color-ember: var(--ember);
-  --color-cream: var(--cream);
-  --color-success: var(--success);
-  --color-success-foreground: var(--success-foreground);
-  --color-warning: var(--warning);
-  --color-surface: var(--surface);
-  --color-surface-raised: var(--surface-raised);
-}
-
-:root {
-  --radius: 0.875rem;
-
-  --background: oklch(0.16 0.008 40);
-  --foreground: oklch(0.97 0.008 80);
-  --surface: oklch(0.21 0.009 40);
-  --surface-raised: oklch(0.25 0.01 40);
-  --card: oklch(0.21 0.009 40);
-  --card-foreground: oklch(0.97 0.008 80);
-  --popover: oklch(0.21 0.009 40);
-  --popover-foreground: oklch(0.97 0.008 80);
-
-  --primary: oklch(0.68 0.14 22);
-  --primary-foreground: oklch(0.17 0.01 30);
-  --brand: oklch(0.68 0.14 22);
-  --brand-foreground: oklch(0.17 0.01 30);
-  --brand-soft: oklch(0.68 0.14 22 / 14%);
-  --ember: oklch(0.78 0.14 62);
-  --cream: oklch(0.95 0.02 85);
-
-  --secondary: oklch(0.27 0.01 40);
-  --secondary-foreground: oklch(0.97 0.008 80);
-  --muted: oklch(0.26 0.008 40);
-  --muted-foreground: oklch(0.72 0.012 70);
-  --accent: oklch(0.27 0.012 40);
-  --accent-foreground: oklch(0.97 0.008 80);
-
-  --success: oklch(0.75 0.16 150);
-  --success-foreground: oklch(0.18 0.02 150);
-  --warning: oklch(0.82 0.15 80);
-  --destructive: oklch(0.62 0.21 25);
-  --destructive-foreground: oklch(0.98 0.01 80);
-
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 14%);
-  --ring: oklch(0.68 0.14 22 / 60%);
-
-  --chart-1: oklch(0.68 0.14 22);
-  --chart-2: oklch(0.78 0.14 62);
-  --chart-3: oklch(0.75 0.16 150);
-  --chart-4: oklch(0.72 0.1 240);
-  --chart-5: oklch(0.85 0.06 85);
-
-  --sidebar: oklch(0.19 0.009 40);
-  --sidebar-foreground: oklch(0.97 0.008 80);
-  --sidebar-primary: oklch(0.68 0.14 22);
-  --sidebar-primary-foreground: oklch(0.17 0.01 30);
-  --sidebar-accent: oklch(0.25 0.01 40);
-  --sidebar-accent-foreground: oklch(0.97 0.008 80);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.68 0.14 22 / 60%);
-
-  --shadow-glow: 0 24px 70px -30px oklch(0.68 0.14 22 / 55%);
-}
-
-@layer base {
-  body {
-    font-family: var(--font-sans);
+    font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
   }
+
   h1, h2, h3, h4 {
     font-family: var(--font-display);
-    letter-spacing: -0.025em;
+    letter-spacing: -0.02em;
   }
 }
 
@@ -233,7 +188,7 @@
 
 @utility grain {
   background-image: radial-gradient(
-    oklch(1 0 0 / 4%) 1px,
+    oklch(0.325 0.052 158.525 / 5%) 1px,
     transparent 1px
   );
   background-size: 4px 4px;
@@ -265,9 +220,9 @@
   width: 16px;
   height: 16px;
   border-radius: 9999px;
-  background: var(--brand);
-  border: 2px solid oklch(0.17 0.01 30);
-  box-shadow: 0 4px 12px oklch(0 0 0 / 45%);
+  background: var(--destructive);
+  border: 2px solid oklch(1 0 0);
+  box-shadow: 0 4px 12px oklch(0 0 0 / 35%);
   cursor: pointer;
 }
 .tapdine-pin-dot.is-live {
@@ -287,11 +242,10 @@
   height: 14px;
   border-radius: 9999px;
   background: oklch(0.72 0.1 240);
-  border: 3px solid white;
+  border: 3px solid oklch(1 0 0);
   box-shadow: 0 0 0 4px oklch(0.72 0.1 240 / 30%);
 }
-.tapdine-popup { color: #1a1a1a; font-family: var(--font-sans); font-size: 13px; }
-.tapdine-popup .live { color: oklch(0.55 0.15 150); font-weight: 600; }
+.tapdine-popup { color: #1a1a1a; font-family: var(--font-body); font-size: 13px; }
+.tapdine-popup .live { color: oklch(0.5 0.09 145); font-weight: 600; }
 .tapdine-popup .until { color: oklch(0.55 0.16 65); font-size: 11px; }
-.tapdine-popup a { color: oklch(0.55 0.18 30); }
-
+.tapdine-popup a { color: oklch(0.5 0.09 145); }
