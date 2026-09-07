@@ -13,9 +13,6 @@ export function SiteNav() {
           <a href="/#value" className="transition-colors hover:text-foreground">
             Why partners join
           </a>
-          <Link to="/brand" className="transition-colors hover:text-foreground">
-            Brand system
-          </Link>
         </nav>
         <Link
           to="/sign-in"
