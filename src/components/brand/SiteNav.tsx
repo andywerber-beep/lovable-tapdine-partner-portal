@@ -31,7 +31,7 @@ export function SiteFooter() {
     <footer className="border-t border-border/60 bg-surface/40">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-5 py-10 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
         <Logo size={26} subtitle="Partner Portal" />
-        <p>© {new Date().getFullYear()} TAPDINE. Built for venues that move fast.</p>
+        <p>© {new Date().getFullYear()} TapDine. Built for venues that move fast.</p>
       </div>
     </footer>
   );

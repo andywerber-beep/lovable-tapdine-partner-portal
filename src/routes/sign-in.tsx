@@ -9,16 +9,16 @@ export const Route = createFileRoute("/sign-in")({
     typeof search['redirect'] === "string" ? { redirect: search['redirect'] } : {},
   head: () => ({
     meta: [
-      { title: "Partner Sign In — TAPDINE" },
+      { title: "Partner Sign In — TapDine" },
       {
         name: "description",
         content:
-          "Sign in to the TAPDINE partner portal to publish offers, add photos, set expiry times and link your menu.",
+          "Sign in to the TapDine partner portal to publish offers, add photos, set expiry times and link your menu.",
       },
-      { property: "og:title", content: "Partner Sign In — TAPDINE" },
+      { property: "og:title", content: "Partner Sign In — TapDine" },
       {
         property: "og:description",
-        content: "Access your TAPDINE venue workspace.",
+        content: "Access your TapDine venue workspace.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

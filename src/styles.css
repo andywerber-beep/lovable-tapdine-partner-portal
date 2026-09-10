@@ -67,12 +67,18 @@
   --color-success-foreground: var(--success-foreground);
   --color-surface: var(--surface);
   --color-surface-raised: var(--surface-raised);
+  --color-gold: var(--gold);
+  --color-forest-deep: var(--forest-deep);
 }
 
 :root {
   --radius: 0.625rem;
   --font-body: "Figtree", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
+
+  /* Launchpad brand lockup */
+  --gold: oklch(0.83 0.14 88);
+  --forest-deep: oklch(0.28 0.045 158);
 
   /* Forest & Moss — light mode */
   --background: oklch(0.964 0.007 88.643);

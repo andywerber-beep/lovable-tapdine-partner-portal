@@ -6,13 +6,13 @@ import phoneImg from "@/assets/tap-phone.jpg";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "TAPDINE — Send Your Offer to People Nearby" },
+      { title: "TapDine — Send Your Offer to People Nearby" },
       {
         name: "description",
         content:
-          "TAPDINE pings nearby customers with your time-limited offers. Cafés, coffee shops, sandwich bars and restaurants publish deals with photos in minutes.",
+          "TapDine pings nearby customers with your time-limited offers. Cafés, coffee shops, sandwich bars and restaurants publish deals with photos in minutes.",
       },
-      { property: "og:title", content: "TAPDINE — Send Your Offer to People Nearby" },
+      { property: "og:title", content: "TapDine — Send Your Offer to People Nearby" },
       {
         property: "og:description",
         content:
@@ -97,7 +97,7 @@ function Landing() {
             </h1>
             <p className="mt-6 max-w-xl text-lg text-muted-foreground">
               Cafés, coffee shops, sandwich bars and restaurants publish a time-limited deal —
-              TAPDINE pings the customers walking past before it expires.
+              TapDine pings the customers walking past before it expires.
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-4">
               <Link
@@ -178,7 +178,7 @@ function Landing() {
             </div>
             <img
               src={phoneImg}
-              alt="Customer receiving a TAPDINE proximity offer ping on their phone"
+              alt="Customer receiving a TapDine proximity offer ping on their phone"
               loading="lazy"
               width={1200}
               height={912}
@@ -193,7 +193,7 @@ function Landing() {
             Your next busy hour starts with one offer.
           </h2>
           <p className="mx-auto mt-5 max-w-lg text-muted-foreground">
-            Join the venues already pinging customers on TAPDINE. Setup takes about ten minutes.
+            Join the venues already pinging customers on TapDine. Setup takes about ten minutes.
           </p>
 
           <Link

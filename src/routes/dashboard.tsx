@@ -15,13 +15,13 @@ import {
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
-      { title: "Partner Portal — Publish TAPDINE Offers" },
+      { title: "Partner Portal — Publish TapDine Offers" },
       {
         name: "description",
         content:
-          "Manage your TAPDINE venue: publish time-limited offers with photos, link your menu, upload your public liability certificate and track approval.",
+          "Manage your TapDine venue: publish time-limited offers with photos, link your menu, upload your public liability certificate and track approval.",
       },
-      { property: "og:title", content: "Partner Portal — Publish TAPDINE Offers" },
+      { property: "og:title", content: "Partner Portal — Publish TapDine Offers" },
       {
         property: "og:description",
         content: "Publish an offer, set the expiry, and ping every customer nearby.",
