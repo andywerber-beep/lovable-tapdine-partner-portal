@@ -27,7 +27,7 @@ export function Logo({
       {withWord && (
         <span className="leading-none">
           <span className="block font-display text-2xl font-extrabold tracking-tight">
-            <span className={onDark ? "text-cream" : "text-foreground"}>Tap</span>
+            <span className={onDark ? "text-cream" : "text-forest-deep"}>Tap</span>
             <span className="text-gradient-gold">Dine</span>
           </span>
           {subtitle && (
