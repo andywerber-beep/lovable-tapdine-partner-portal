@@ -28,7 +28,7 @@ export function Logo({
         <span className="leading-none">
           <span className="block font-display text-2xl font-extrabold tracking-tight">
             <span className={onDark ? "text-cream" : "text-foreground"}>Tap</span>
-            <span className="text-gold">Dine</span>
+            <span className="text-gradient-gold">Dine</span>
           </span>
           {subtitle && (
             <span className="mt-1 block text-[11px] font-medium uppercase tracking-[0.24em] text-muted-foreground">
