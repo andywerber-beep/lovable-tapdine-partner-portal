@@ -78,14 +78,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "TAPDINE Partner Portal" },
+      { title: "TapDine Partner Portal" },
       {
         name: "description",
         content:
-          "TAPDINE pings nearby customers with time-limited offers from local venues — publish deals with photos and link your menu from one partner portal.",
+          "TapDine pings nearby customers with time-limited offers from local venues — publish deals with photos and link your menu from one partner portal.",
       },
-      { name: "author", content: "TAPDINE" },
-      { property: "og:title", content: "TAPDINE Partner Portal" },
+      { name: "author", content: "TapDine" },
+      { property: "og:title", content: "TapDine Partner Portal" },
       {
         property: "og:description",
         content: "Proximity deal pings and offer management for local venue partners.",
