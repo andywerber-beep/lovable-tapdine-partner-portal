@@ -6,8 +6,10 @@ import heroImg from "@/assets/partner-cafe.jpg";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/sign-in")({
-  validateSearch: (search: Record<string, unknown>): { redirect?: string } =>
-    typeof search['redirect'] === "string" ? { redirect: search['redirect'] } : {},
+  validateSearch: (search: Record<string, unknown>): { redirect?: string; signup?: boolean } => ({
+    ...(typeof search['redirect'] === "string" ? { redirect: search['redirect'] } : {}),
+    ...(search['signup'] === true ? { signup: true } : {}),
+  }),
   head: () => ({
     meta: [
       { title: "Partner Sign In — TapDine" },
@@ -30,8 +32,8 @@ export const Route = createFileRoute("/sign-in")({
 
 function SignIn() {
   const navigate = useNavigate();
-  const { redirect } = Route.useSearch();
-  const [mode, setMode] = useState<"in" | "up">("in");
+  const { redirect, signup } = Route.useSearch();
+  const [mode, setMode] = useState<"in" | "up">(signup ? "up" : "in");
   const [show, setShow] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

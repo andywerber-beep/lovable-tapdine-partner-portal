@@ -13,6 +13,9 @@ export function SiteNav() {
           <a href="/#value" className="transition-colors hover:text-foreground">
             Why partners join
           </a>
+          <a href="/#pricing" className="transition-colors hover:text-foreground">
+            Pricing
+          </a>
         </nav>
         <Link
           to="/sign-in"

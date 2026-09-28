@@ -99,7 +99,7 @@ function Landing() {
             <div className="mt-10 flex flex-wrap items-center gap-4">
               <Link
                 to="/sign-in"
-                search={{}}
+                 search={{ signup: true }}
                 className="glow rounded-full bg-brand px-7 py-3.5 text-base font-bold text-brand-foreground transition-transform hover:scale-[1.03]"
               >
                 Become a partner
@@ -156,7 +156,7 @@ function Landing() {
               <h2 className="mt-2 max-w-xl text-4xl font-black md:text-5xl">0% commission for your first 3 months.</h2>
               <p className="mt-4 max-w-lg text-base">After that, a flat 10% commission. No monthly fees or hidden costs.</p>
             </div>
-            <Link to="/sign-in" search={{}} className="shrink-0 self-start rounded-full bg-secondary px-7 py-3.5 font-extrabold text-secondary-foreground hover:bg-secondary/90">Join as a founding partner</Link>
+            <Link to="/sign-in" search={{ signup: true }} className="shrink-0 self-start rounded-full bg-secondary px-7 py-3.5 font-extrabold text-secondary-foreground hover:bg-secondary/90">Join as a founding partner</Link>
           </div>
         </section>
 
@@ -205,7 +205,7 @@ function Landing() {
 
           <Link
             to="/sign-in"
-            search={{}}
+             search={{ signup: true }}
             className="glow mt-10 inline-block rounded-full bg-brand px-9 py-4 text-base font-semibold text-brand-foreground transition-transform hover:scale-[1.03]"
           >
             Create your partner account
