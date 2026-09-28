@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteNav, SiteFooter } from "@/components/brand/SiteNav";
-import heroImg from "@/assets/hero-service.jpg";
+import heroImg from "@/assets/partner-cafe.jpg";
 import phoneImg from "@/assets/tap-phone.jpg";
 
 export const Route = createFileRoute("/")({
@@ -29,7 +29,7 @@ const steps = [
   {
     n: "01",
     title: "Create your venue account",
-    body: "Coffee shop, café, sandwich bar, deli or restaurant — sign up and your workspace opens instantly.",
+    body: "Coffee shop, café, sandwich bar, deli or restaurant — sign up and start setting up your venue.",
   },
   {
     n: "02",
@@ -39,7 +39,7 @@ const steps = [
   {
     n: "03",
     title: "Publish an offer",
-    body: "“10% off the lobster roll.” Add a photo, set a price and choose how long it stays live.",
+    body: "“10% off your morning coffee.” Add a photo, set a price and choose how long it stays live.",
   },
   {
     n: "04",
@@ -80,30 +80,27 @@ function Landing() {
         <section className="relative overflow-hidden">
           <img
             src={heroImg}
-            alt="Barista handing over a coffee and sandwich at a local counter"
+            alt="Barista serving coffee and a sandwich at a sunny Brighton café"
             width={1600}
             height={1104}
-            className="absolute inset-0 h-full w-full object-cover opacity-35"
+            className="absolute inset-0 h-full w-full object-cover object-center"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/85 to-background" />
-          <div className="relative mx-auto w-full max-w-6xl px-5 py-24 md:py-36">
-            <span className="inline-flex items-center gap-2 rounded-full border border-brand/40 bg-brand-soft px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-brand">
-              Venue partner network
+          <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/10" />
+          <div className="relative mx-auto w-full max-w-6xl px-5 py-16 md:py-28">
+            <span className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-1.5 text-xs font-extrabold uppercase text-secondary-foreground">
+              For local food spots
             </span>
-            <h1 className="mt-7 max-w-3xl text-5xl font-extrabold leading-[0.95] md:text-7xl">
-              Your offer, in the
-              <span className="text-brand"> pocket </span>
-              of everyone nearby.
+            <h1 className="mt-7 max-w-2xl text-5xl font-black leading-tight md:text-7xl">
+              More local love for your venue.
             </h1>
-            <p className="mt-6 max-w-xl text-lg text-muted-foreground">
-              Cafés, coffee shops, sandwich bars and restaurants publish a time-limited deal —
-              TapDine pings the customers walking past before it expires.
+            <p className="mt-6 max-w-lg text-lg font-semibold text-foreground">
+              Turn quiet hours into busy ones. Put your best deals in front of people nearby, right when they’re hungry.
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-4">
               <Link
                 to="/sign-in"
                 search={{}}
-                className="glow rounded-full bg-brand px-7 py-3.5 text-base font-semibold text-brand-foreground transition-transform hover:scale-[1.03]"
+                className="glow rounded-full bg-brand px-7 py-3.5 text-base font-bold text-brand-foreground transition-transform hover:scale-[1.03]"
               >
                 Become a partner
               </Link>
@@ -114,12 +111,11 @@ function Landing() {
                 See the portal
               </Link>
             </div>
-            <dl className="mt-16 grid max-w-2xl grid-cols-2 gap-8 border-t border-border/60 pt-8 sm:grid-cols-3">
+            <dl className="mt-12 grid max-w-2xl grid-cols-2 gap-6 border-t border-foreground/20 pt-6 sm:grid-cols-3">
               {[
-                ["2,400+", "Customers pinged daily"],
-                ["2 hrs", "Typical offer window"],
-                ["0%", "Setup fee"],
-
+                ["0%", "First 3 months"],
+                ["10%", "Flat rate after"],
+                ["£0", "Monthly fees"],
               ].map(([v, l]) => (
                 <div key={l}>
                   <dt className="font-display text-3xl font-bold text-foreground">{v}</dt>
@@ -131,7 +127,7 @@ function Landing() {
         </section>
 
         {/* Value */}
-        <section id="value" className="mx-auto w-full max-w-6xl px-5 py-24">
+        <section id="value" className="mx-auto w-full max-w-6xl px-5 py-20">
           <h2 className="max-w-2xl text-4xl font-bold md:text-5xl">
             Built for the quiet hour you want to fill.
           </h2>
@@ -140,7 +136,7 @@ function Landing() {
             {values.map((v) => (
               <article
                 key={v.title}
-                className="rounded-3xl border border-border bg-surface p-7 transition-colors hover:border-brand/50"
+                 className="rounded-lg border border-border bg-surface p-7 transition-colors hover:border-brand/50"
               >
                 <p className="font-display text-4xl font-bold text-brand">{v.stat}</p>
                 <p className="mt-1 text-xs uppercase tracking-[0.2em] text-muted-foreground">
@@ -153,8 +149,19 @@ function Landing() {
           </div>
         </section>
 
+        <section id="pricing" className="bg-brand py-16 text-brand-foreground">
+          <div className="mx-auto flex max-w-6xl flex-col gap-7 px-5 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="font-bold uppercase text-sm">Founding partner offer</p>
+              <h2 className="mt-2 max-w-xl text-4xl font-black md:text-5xl">0% commission for your first 3 months.</h2>
+              <p className="mt-4 max-w-lg text-base">After that, a flat 10% commission. No monthly fees or hidden costs.</p>
+            </div>
+            <Link to="/sign-in" search={{}} className="shrink-0 self-start rounded-full bg-secondary px-7 py-3.5 font-extrabold text-secondary-foreground hover:bg-secondary/90">Join as a founding partner</Link>
+          </div>
+        </section>
+
         {/* How it works */}
-        <section id="how" className="border-y border-border/60 bg-surface/40">
+        <section id="how" className="border-y border-border/60 bg-accent/40">
           <div className="mx-auto grid w-full max-w-6xl gap-14 px-5 py-24 lg:grid-cols-2 lg:items-center">
             <div>
               <h2 className="text-4xl font-bold md:text-5xl">From signup to first ping</h2>
@@ -182,7 +189,7 @@ function Landing() {
               loading="lazy"
               width={1200}
               height={912}
-              className="glow w-full rounded-3xl border border-border object-cover"
+               className="w-full rounded-lg object-cover"
             />
           </div>
         </section>
@@ -193,7 +200,7 @@ function Landing() {
             Your next busy hour starts with one offer.
           </h2>
           <p className="mx-auto mt-5 max-w-lg text-muted-foreground">
-            Join the venues already pinging customers on TapDine. Setup takes about ten minutes.
+             Join TapDine as a founding partner: your first 3 months are commission-free, then it’s a flat 10%. No monthly fees or hidden costs.
           </p>
 
           <Link
