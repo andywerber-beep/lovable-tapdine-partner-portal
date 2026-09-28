@@ -2,11 +2,14 @@ import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Logo } from "@/components/brand/Logo";
 import { supabase } from "@/integrations/supabase/client";
-import heroImg from "@/assets/hero-service.jpg";
+import heroImg from "@/assets/partner-cafe.jpg";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/sign-in")({
-  validateSearch: (search: Record<string, unknown>): { redirect?: string } =>
-    typeof search['redirect'] === "string" ? { redirect: search['redirect'] } : {},
+  validateSearch: (search: Record<string, unknown>): { redirect?: string; signup?: boolean } => ({
+    ...(typeof search['redirect'] === "string" ? { redirect: search['redirect'] } : {}),
+    ...(search['signup'] === true ? { signup: true } : {}),
+  }),
   head: () => ({
     meta: [
       { title: "Partner Sign In — TapDine" },
@@ -29,8 +32,8 @@ export const Route = createFileRoute("/sign-in")({
 
 function SignIn() {
   const navigate = useNavigate();
-  const { redirect } = Route.useSearch();
-  const [mode, setMode] = useState<"in" | "up">("in");
+  const { redirect, signup } = Route.useSearch();
+  const [mode, setMode] = useState<"in" | "up">(signup ? "up" : "in");
   const [show, setShow] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -70,12 +73,12 @@ function SignIn() {
       <div className="relative hidden overflow-hidden lg:block">
         <img
           src={heroImg}
-          alt="Coffee shop counter with pastries during a busy morning"
+          alt="Friendly barista serving coffee and lunch at a sunny café"
           width={1600}
           height={1104}
-          className="absolute inset-0 h-full w-full object-cover opacity-45"
+          className="absolute inset-0 h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-tr from-background via-background/80 to-brand/20" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/25 to-transparent" />
         <div className="relative flex h-full flex-col justify-between p-12">
           <Logo size={32} subtitle="Partner Portal" />
           <div>
@@ -101,9 +104,15 @@ function SignIn() {
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
             {mode === "in"
-              ? "Sign in to your partner workspace or the admin desk."
-              : "Ten minutes to onboarding, no setup fee."}
+              ? "Sign in to your partner workspace."
+              : "Join TapDine as a founding partner."}
           </p>
+          {mode === "up" && (
+            <div className="mt-6 rounded-lg border border-brand/25 bg-brand-soft p-5">
+              <p className="font-display text-lg font-extrabold text-foreground">0% commission for your first 3 months</p>
+              <p className="mt-1 text-sm text-muted-foreground">Then a flat 10% commission. No monthly fees or hidden costs.</p>
+            </div>
+          )}
 
           <form className="mt-9 space-y-5" onSubmit={onSubmit}>
             <div className="space-y-2">
@@ -136,36 +145,38 @@ function SignIn() {
                   placeholder="••••••••"
                   className="w-full rounded-xl border border-input bg-surface px-4 py-3 pr-16 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 focus:border-brand"
                 />
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
                   onClick={() => setShow(!show)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-brand"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-semibold text-brand"
                 >
                   {show ? "Hide" : "Show"}
-                </button>
+                </Button>
               </div>
             </div>
 
             {error && <p className="text-sm text-brand">{error}</p>}
             {notice && <p className="text-sm text-success">{notice}</p>}
 
-            <button
+            <Button
               type="submit"
               disabled={busy}
-              className="glow w-full rounded-xl bg-brand py-3.5 text-sm font-semibold text-brand-foreground transition-transform hover:scale-[1.01] disabled:opacity-50"
+              className="glow h-12 w-full rounded-lg text-sm font-bold"
             >
               {busy ? "Please wait…" : mode === "in" ? "Sign in" : "Register account"}
-            </button>
+            </Button>
           </form>
 
           <p className="mt-7 text-center text-sm text-muted-foreground">
             {mode === "in" ? "New venue?" : "Already a partner?"}{" "}
-            <button
+            <Button
+              variant="link"
               onClick={() => setMode(mode === "in" ? "up" : "in")}
-              className="font-semibold text-brand hover:underline"
+              className="h-auto p-0 font-bold text-brand"
             >
               {mode === "in" ? "Create an account" : "Sign in"}
-            </button>
+            </Button>
           </p>
 
           <Link

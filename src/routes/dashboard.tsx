@@ -3,6 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/brand/Logo";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import {
   fetchMyVenue,
@@ -71,12 +72,13 @@ function Dashboard() {
         <div className="flex items-center gap-4 text-xs text-muted-foreground">
           
           <span className="hidden sm:inline">{user.email}</span>
-          <button
+          <Button
+            variant="outline"
             onClick={() => supabase.auth.signOut()}
-            className="rounded-full border border-border px-3 py-1.5 hover:bg-surface"
+            className="rounded-full"
           >
             Sign out
-          </button>
+          </Button>
         </div>
       </header>
 
@@ -85,6 +87,10 @@ function Dashboard() {
           <p className="text-sm text-muted-foreground">Loading your venue…</p>
         ) : (
           <>
+            <div className="border-l-4 border-brand bg-brand-soft px-5 py-4">
+              <p className="font-display text-base font-extrabold">Founding partner pricing</p>
+              <p className="mt-1 text-sm text-muted-foreground">0% commission for your first 3 months, then a flat 10% commission. No monthly fees or hidden costs.</p>
+            </div>
             <StatusBanner venue={venue ?? null} />
             <VenueForm
               venue={venue ?? null}
@@ -113,7 +119,7 @@ function Shell({ children }: { children: React.ReactNode }) {
 function StatusBanner({ venue }: { venue: Venue | null }) {
   if (!venue) {
     return (
-      <div className="rounded-2xl border border-warning/40 bg-warning/10 p-5">
+      <div className="rounded-lg border border-warning/40 bg-warning/10 p-5">
         <p className="text-sm font-semibold text-warning">Step 1 — tell us about your venue</p>
         <p className="mt-1 text-sm text-muted-foreground">
           Add your details and upload your public liability certificate. The admin desk verifies
@@ -130,7 +136,7 @@ function StatusBanner({ venue }: { venue: Venue | null }) {
         ? "border-brand/40 bg-brand/10 text-brand"
         : "border-warning/40 bg-warning/10 text-warning";
   return (
-    <div className={`rounded-2xl border p-5 ${tone}`}>
+    <div className={`rounded-lg border p-5 ${tone}`}>
       <p className="text-sm font-semibold capitalize">
         {venue.status === "approved"
           ? "Live on the customer map"
@@ -241,7 +247,7 @@ function VenueForm({
   );
 
   return (
-    <section className="rounded-3xl border border-border bg-surface p-6">
+    <section className="rounded-lg border border-border bg-surface p-6">
       <h2 className="text-lg font-bold">Venue profile</h2>
       <p className="mt-1 text-sm text-muted-foreground">
         Your pin position, menu link and contact details on the customer map.
@@ -258,13 +264,13 @@ function VenueForm({
       </div>
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
-        <button
+        <Button
           disabled={save.isPending || !form.name}
           onClick={() => save.mutate()}
-          className="rounded-full bg-brand px-6 py-2.5 text-sm font-semibold text-brand-foreground disabled:opacity-40"
+          className="rounded-full px-6"
         >
           {venue ? "Save changes" : "Create venue"}
-        </button>
+        </Button>
         {venue && (
           <label className="cursor-pointer rounded-full border border-border px-5 py-2.5 text-sm font-semibold hover:bg-surface-raised">
             {uploading
@@ -340,7 +346,7 @@ function OffersPanel({ venue }: { venue: Venue }) {
   const past = offers.filter((o) => new Date(o.expires_at).getTime() <= Date.now());
 
   return (
-    <section className="rounded-3xl border border-border bg-surface p-6">
+    <section className="rounded-lg border border-border bg-surface p-6">
       <h2 className="text-lg font-bold">Offer board</h2>
       <p className="mt-1 text-sm text-muted-foreground">
         Publishing an offer turns your pin green and pings every customer inside your radius until
@@ -371,13 +377,13 @@ function OffersPanel({ venue }: { venue: Venue }) {
             </option>
           ))}
         </select>
-        <button
+        <Button
           disabled={busy || !title || venue.status !== "approved"}
           onClick={publish}
-          className="rounded-xl bg-success px-5 py-2.5 text-sm font-semibold text-success-foreground disabled:opacity-40"
+          className="rounded-lg bg-success px-5 text-success-foreground hover:bg-success/90"
         >
           {busy ? "Publishing…" : "Publish"}
-        </button>
+        </Button>
       </div>
 
       <label className="mt-3 inline-block cursor-pointer text-xs font-semibold text-brand">
@@ -399,7 +405,7 @@ function OffersPanel({ venue }: { venue: Venue }) {
         {live.map((o) => (
           <div
             key={o.id}
-            className="flex items-center gap-3 rounded-2xl border border-success/30 bg-success/5 px-4 py-3"
+            className="flex items-center gap-3 rounded-lg border border-success/30 bg-success/5 px-4 py-3"
           >
             <span className="relative flex h-2.5 w-2.5">
               <span className="pin-pulse absolute inset-0 rounded-full bg-success" />
@@ -410,12 +416,13 @@ function OffersPanel({ venue }: { venue: Venue }) {
               {o.price_text ? ` · ${o.price_text}` : ""}
             </span>
             <span className="text-xs text-warning">{timeLeft(o.expires_at)}</span>
-            <button
+            <Button
+              variant="outline"
               onClick={() => endOffer(o.id)}
-              className="rounded-full border border-border px-3 py-1 text-[11px] hover:bg-surface-raised"
+              className="h-7 rounded-full px-3 text-xs"
             >
               End now
-            </button>
+            </Button>
           </div>
         ))}
         {live.length === 0 && (
@@ -424,7 +431,7 @@ function OffersPanel({ venue }: { venue: Venue }) {
         {past.slice(0, 5).map((o) => (
           <div
             key={o.id}
-            className="flex items-center gap-3 rounded-2xl border border-border/60 px-4 py-2.5 text-xs text-muted-foreground"
+            className="flex items-center gap-3 rounded-lg border border-border/60 px-4 py-2.5 text-xs text-muted-foreground"
           >
             <span className="h-2 w-2 rounded-full bg-muted-foreground/40" />
             <span className="flex-1 truncate">{o.title}</span>

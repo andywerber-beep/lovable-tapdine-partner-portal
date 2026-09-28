@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Keep Partner Portal presentation in the shared teal-and-gold tokens in `src/styles.css` while leaving venue/offer persistence unchanged; this keeps the Launchpad-aligned brand separate from business logic.

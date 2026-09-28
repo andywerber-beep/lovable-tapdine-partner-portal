@@ -1,42 +1,17 @@
 import { Link } from "@tanstack/react-router";
-import mark from "@/assets/tapdine-mark.png";
+import logo from "@/assets/tapdine-logo-cropped.png.asset.json";
 
 export function Logo({
   size = 32,
-  withWord = true,
   subtitle,
-  onDark = false,
 }: {
   size?: number;
-  withWord?: boolean;
   subtitle?: string;
-  onDark?: boolean;
 }) {
   return (
     <Link to="/" className="flex items-center gap-3">
-      <span
-        className="grid shrink-0 place-items-center rounded-full bg-forest-deep ring-1 ring-gold/40"
-        style={{ width: size, height: size, padding: Math.round(size * 0.1) }}
-      >
-        <img
-          src={mark}
-          alt="TapDine logo"
-          className="h-full w-full object-contain"
-        />
-      </span>
-      {withWord && (
-        <span className="leading-none">
-          <span className="block font-display text-2xl font-extrabold tracking-tight">
-            <span className={onDark ? "text-cream" : "text-forest-deep"}>Tap</span>
-            <span className="text-gradient-gold">Dine</span>
-          </span>
-          {subtitle && (
-            <span className="mt-1 block text-[11px] font-medium uppercase tracking-[0.24em] text-muted-foreground">
-              {subtitle}
-            </span>
-          )}
-        </span>
-      )}
+      <img src={logo.url} alt="TapDine" className="w-auto shrink-0 object-contain" style={{ height: size * 1.45, maxWidth: size * 5.4 }} />
+      {subtitle && <span className="hidden border-l border-border pl-3 text-xs font-bold text-muted-foreground sm:block">{subtitle}</span>}
     </Link>
   );
 }
