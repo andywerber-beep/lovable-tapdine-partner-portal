@@ -83,9 +83,9 @@ export function TapdineGate({ title, children }: { title: string; children: (ctx
           <p className="rounded-xl border border-warning/40 bg-warning/10 p-4 text-sm">{venueErr}</p>
         ) : !venue ? (
           <p className="text-sm text-muted-foreground">Loading…</p>
-        ) : !isLive && venue.status !== "approved" && (!venue.address1 || !venue.postcode || venue.status === "details_pending" || !venue.status) ? (
+        ) : !isLive && venue.status !== "approved" && (!venue.address1 || !venue.postcode || !venue.status) ? (
           <VenueDetailsStep venue={venue} token={session.access_token} onDone={refresh} onSignOut={() => sb.auth.signOut()} />
-        ) : venue.status === "agreement_pending" ? (
+        ) : venue.status === "details_pending" ? (
           <AgreementStep token={session.access_token} onDone={refresh} onSignOut={() => sb.auth.signOut()} />
         ) : venue.status === "approved" ? (
           <WelcomeStep name={venue.name} token={session.access_token} onDone={refresh} />

@@ -167,7 +167,8 @@ export const saveVenueDetails = createServerFn({ method: "POST" })
       latitude,
       longitude,
     };
-    if (!venue.status || venue.status === "details_pending") update.status = "agreement_pending";
+    // Status stays details_pending; filled-in address means the agreement step is next.
+    if (!venue.status) update.status = "details_pending";
 
     // Food hygiene rating from the Food Standards Agency: 3+ auto-accepts.
     try {
@@ -213,7 +214,7 @@ export const acceptAgreement = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { requireVenueOwner, tapdineAdmin } = await import("./tapdine-db.server");
     const venue = await requireVenueOwner(data.token);
-    if (venue.status !== "agreement_pending" && venue.status !== "details_pending")
+    if (venue.status !== "details_pending" || !venue.address1)
       return { ok: true as const };
     const { error } = await tapdineAdmin()
       .from("partners")
