@@ -136,7 +136,7 @@ function londonStart(unit: "day" | "week" | "month"): Date {
   let d = Number(parts.day);
   if (unit === "month") d = 1;
   if (unit === "week") {
-    const idx = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].indexOf(parts.weekday);
+    const idx = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].indexOf(parts.weekday ?? "Mon");
     const dt = new Date(Date.UTC(y, m - 1, d - idx));
     y = dt.getUTCFullYear();
     m = dt.getUTCMonth() + 1;
