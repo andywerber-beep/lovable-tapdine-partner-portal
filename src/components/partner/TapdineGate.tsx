@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { getTapdineAuthConfig, getMyTapdineVenue } from "@/lib/passes.functions";
 import { getTapdineClient } from "@/lib/tapdine-auth";
 import { CompliancePending, type ComplianceVenue } from "@/components/partner/CompliancePending";
+import { VenueDetailsStep, AgreementStep, WelcomeStep, type OnboardingVenue } from "@/components/partner/OnboardingSteps";
 
 function useTapdineClient() {
   const loadConfig = useServerFn(getTapdineAuthConfig);
@@ -27,7 +28,7 @@ export function TapdineGate({ title, children }: { title: string; children: (ctx
   const loadVenue = useServerFn(getMyTapdineVenue);
   const [session, setSession] = useState<Session | null>(null);
   const [ready, setReady] = useState(false);
-  const [venue, setVenue] = useState<(ComplianceVenue & { status: string | null }) | null>(null);
+  const [venue, setVenue] = useState<(ComplianceVenue & OnboardingVenue & { status: string | null }) | null>(null);
   const venueName = venue?.name ?? null;
   const [venueErr, setVenueErr] = useState<string | null>(null);
   const [reload, setReload] = useState(0);
@@ -50,7 +51,8 @@ export function TapdineGate({ title, children }: { title: string; children: (ctx
       .catch((e) => setVenueErr(e instanceof Error ? e.message : "Could not load your venue."));
   }, [session?.access_token, loadVenue, reload]);
 
-  const isLive = venue && ["active", "approved", "live"].includes(venue.status ?? "");
+  const isLive = venue && ["active", "live"].includes(venue.status ?? "");
+  const refresh = () => setReload((n) => n + 1);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -81,8 +83,14 @@ export function TapdineGate({ title, children }: { title: string; children: (ctx
           <p className="rounded-xl border border-warning/40 bg-warning/10 p-4 text-sm">{venueErr}</p>
         ) : !venue ? (
           <p className="text-sm text-muted-foreground">Loading…</p>
+        ) : !isLive && venue.status !== "approved" && (!venue.address1 || !venue.postcode || !venue.status) ? (
+          <VenueDetailsStep venue={venue} token={session.access_token} onDone={refresh} onSignOut={() => sb.auth.signOut()} />
+        ) : venue.status === "details_pending" ? (
+          <AgreementStep token={session.access_token} onDone={refresh} onSignOut={() => sb.auth.signOut()} />
+        ) : venue.status === "approved" ? (
+          <WelcomeStep name={venue.name} token={session.access_token} onDone={refresh} />
         ) : !isLive ? (
-          <CompliancePending venue={venue} token={session.access_token} onDone={() => setReload((n) => n + 1)} onSignOut={() => sb.auth.signOut()} />
+          <CompliancePending venue={venue} token={session.access_token} onDone={refresh} onSignOut={() => sb.auth.signOut()} />
         ) : (
           <>
             <h1 className="font-display text-3xl font-extrabold">{title}</h1>
