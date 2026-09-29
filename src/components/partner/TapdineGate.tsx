@@ -1,26 +1,19 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { createClient, type SupabaseClient, type Session } from "@supabase/supabase-js";
+import { type SupabaseClient, type Session } from "@supabase/supabase-js";
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
 import { getTapdineAuthConfig, getMyTapdineVenue } from "@/lib/passes.functions";
-
-let client: SupabaseClient | null = null;
+import { getTapdineClient } from "@/lib/tapdine-auth";
 
 function useTapdineClient() {
   const loadConfig = useServerFn(getTapdineAuthConfig);
-  const [c, setC] = useState<SupabaseClient | null>(client);
+  const [c, setC] = useState<SupabaseClient | null>(null);
   const [err, setErr] = useState<string | null>(null);
   useEffect(() => {
-    if (client) return;
-    loadConfig()
-      .then(({ url, key }) => {
-        client ??= createClient(url, key, {
-          auth: { storageKey: "tapdine-partner-auth", persistSession: true, autoRefreshToken: true },
-        });
-        setC(client);
-      })
+    getTapdineClient(loadConfig)
+      .then(setC)
       .catch(() => setErr("Could not reach the TapDine database."));
   }, [loadConfig]);
   return { client: c, err };

@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { Logo } from "@/components/brand/Logo";
-import { supabase } from "@/integrations/supabase/client";
 import heroImg from "@/assets/partner-cafe.jpg";
 import { Button } from "@/components/ui/button";
+import { getTapdineClient } from "@/lib/tapdine-auth";
+import { getTapdineAuthConfig, registerTapdinePartner } from "@/lib/passes.functions";
 
 export const Route = createFileRoute("/sign-in")({
   validateSearch: (search: Record<string, unknown>): { redirect?: string; signup?: boolean } => ({
@@ -33,13 +35,26 @@ export const Route = createFileRoute("/sign-in")({
 function SignIn() {
   const navigate = useNavigate();
   const { redirect, signup } = Route.useSearch();
+  const loadConfig = useServerFn(getTapdineAuthConfig);
+  const register = useServerFn(registerTapdinePartner);
   const [mode, setMode] = useState<"in" | "up">(signup ? "up" : "in");
   const [show, setShow] = useState(false);
+  const [venueName, setVenueName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+
+  async function signIn() {
+    const sb = await getTapdineClient(loadConfig);
+    const { error } = await sb.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+    if (error) throw new Error("Those details didn't match. Please check and try again.");
+    navigate({ to: (redirect as "/partner/redeem") ?? "/partner/redeem" });
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -48,18 +63,11 @@ function SignIn() {
     setNotice(null);
     try {
       if (mode === "in") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        navigate({ to: (redirect as "/dashboard") ?? "/dashboard" });
+        await signIn();
       } else {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { emailRedirectTo: `${window.location.origin}/dashboard` },
-        });
-        if (error) throw error;
-        setNotice("Account created. Check your inbox to confirm, then sign in.");
-        setMode("in");
+        await register({ data: { email: email.trim(), password, venueName: venueName.trim() } });
+        setNotice("Account created. Signing you in…");
+        await signIn();
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
@@ -115,6 +123,24 @@ function SignIn() {
           )}
 
           <form className="mt-9 space-y-5" onSubmit={onSubmit}>
+            {mode === "up" && (
+              <div className="space-y-2">
+                <label htmlFor="venue" className="text-sm font-medium text-muted-foreground">
+                  Venue name
+                </label>
+                <input
+                  id="venue"
+                  type="text"
+                  required
+                  minLength={2}
+                  value={venueName}
+                  onChange={(e) => setVenueName(e.target.value)}
+                  placeholder="The Malt Café"
+                  className="w-full rounded-xl border border-input bg-surface px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 focus:border-brand"
+                />
+              </div>
+            )}
+
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium text-muted-foreground">
                 Email address
@@ -139,7 +165,7 @@ function SignIn() {
                   id="pw"
                   type={show ? "text" : "password"}
                   required
-                  minLength={6}
+                  minLength={8}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
