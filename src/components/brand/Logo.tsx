@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import logo from "@/assets/tapdine-logo-cropped.png.asset.json";
+import logo from "@/assets/tapdine-launchpad-logo.png.asset.json";
 
 export function Logo({
   size = 32,
