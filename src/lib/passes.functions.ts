@@ -54,6 +54,55 @@ export const getMyTapdineVenue = createServerFn({ method: "POST" })
     return requireVenueOwner(data.token);
   });
 
+/**
+ * Registers a venue owner in the shared TapDine database and creates their
+ * pending partner record so the admin desk can review them.
+ */
+export const registerTapdinePartner = createServerFn({ method: "POST" })
+  .inputValidator((d) =>
+    z
+      .object({
+        email: z.string().trim().email().max(255),
+        password: z.string().min(8).max(128),
+        venueName: z.string().trim().min(2).max(120),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data }) => {
+    const { tapdineAdmin } = await import("./tapdine-db.server");
+    const admin = tapdineAdmin();
+
+    const { data: created, error } = await admin.auth.admin.createUser({
+      email: data.email,
+      password: data.password,
+      email_confirm: true,
+      user_metadata: { venue_name: data.venueName },
+    });
+    if (error || !created.user) {
+      const msg = error?.message ?? "";
+      if (/already/i.test(msg)) throw new Error("An account with that email already exists.");
+      console.error("tapdine signup failed", error);
+      throw new Error("Could not create your account. Please try again.");
+    }
+
+    const userId = created.user.id;
+    const { error: pErr } = await admin.from("partners").insert({
+      id: userId,
+      user_id: userId,
+      name: data.venueName,
+      email: data.email,
+      commission_rate: 0,
+      status: "details_pending",
+    });
+    if (pErr) {
+      console.error("partner row failed", pErr);
+      await admin.auth.admin.deleteUser(userId).catch(() => {});
+      throw new Error("Could not set up your venue record. Please try again.");
+    }
+
+    return { ok: true as const };
+  });
+
 async function findPass(token: string, code: string) {
   const { requireVenueOwner, tapdineAdmin, PASS_WINDOW_MS } = await import("./tapdine-db.server");
   const venue = await requireVenueOwner(token);
