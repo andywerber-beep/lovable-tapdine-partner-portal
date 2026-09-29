@@ -84,7 +84,8 @@ export const submitCompliance = createServerFn({ method: "POST" })
 
     const upload = async (prefix: string, doc: z.infer<typeof docSchema>) => {
       const ext = doc.type === "application/pdf" ? "pdf" : doc.type === "image/png" ? "png" : "jpg";
-      const path = `${venue.id}/${prefix}_${Date.now()}.${ext}`;
+      // Admin Desk looks for files starting "insurance-" in the venue's folder.
+      const path = `${venue.id}/${prefix}-${Date.now()}.${ext}`;
       const { error } = await admin.storage
         .from("compliance-docs")
         .upload(path, Buffer.from(doc.base64, "base64"), { contentType: doc.type });
@@ -109,6 +110,133 @@ export const submitCompliance = createServerFn({ method: "POST" })
     if (error) {
       console.error("compliance update failed", error);
       throw new Error("Could not save your details. Please try again.");
+    }
+    return { ok: true as const };
+  });
+
+const text = (max: number) => z.string().trim().max(max);
+
+/** Step 1: venue details + owner name. Geocodes the postcode and checks the FSA hygiene rating. */
+export const saveVenueDetails = createServerFn({ method: "POST" })
+  .inputValidator((d) =>
+    z
+      .object({
+        token: tokenSchema,
+        name: text(120).min(2, "Please enter your venue name."),
+        ownerName: text(120).min(2, "Please enter the owner's full name."),
+        cuisineType: text(80).min(2, "Please enter a cuisine type."),
+        telNumber: text(30).regex(/^[0-9+()\s-]{7,30}$/, "Please enter a valid phone number."),
+        address1: text(160).min(3, "Please enter the first line of your address."),
+        address2: text(160).optional().default(""),
+        town: text(80).min(2, "Please enter your town or city."),
+        postcode: text(10).regex(/^[A-Za-z]{1,2}\d[A-Za-z\d]?\s*\d[A-Za-z]{2}$/, "Please enter a valid UK postcode."),
+        websiteUrl: text(300).optional().default(""),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data }) => {
+    const { requireVenueOwner, tapdineAdmin } = await import("./tapdine-db.server");
+    const venue = await requireVenueOwner(data.token);
+    const admin = tapdineAdmin();
+    const postcode = data.postcode.toUpperCase().replace(/\s+/g, "").replace(/(\w{3})$/, " $1");
+
+    // Location for proximity pings (free UK postcode lookup).
+    let latitude: number | null = null;
+    let longitude: number | null = null;
+    try {
+      const r = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(postcode)}`);
+      if (r.ok) {
+        const j = (await r.json()) as { result?: { latitude: number; longitude: number } };
+        latitude = j.result?.latitude ?? null;
+        longitude = j.result?.longitude ?? null;
+      }
+    } catch (e) {
+      console.error("postcode lookup failed", e);
+    }
+    if (latitude == null) throw new Error("We couldn't find that postcode. Please check it and try again.");
+
+    const update: Record<string, unknown> = {
+      name: data.name,
+      cuisine_type: data.cuisineType,
+      tel_number: data.telNumber,
+      address1: data.address1,
+      address2: data.address2 || null,
+      town: data.town,
+      postcode,
+      website_url: data.websiteUrl || null,
+      latitude,
+      longitude,
+    };
+    if (!venue.status || venue.status === "details_pending") update.status = "agreement_pending";
+
+    // Food hygiene rating from the Food Standards Agency: 3+ auto-accepts.
+    try {
+      const r = await fetch(
+        `https://api.ratings.food.gov.uk/Establishments?name=${encodeURIComponent(data.name)}&address=${encodeURIComponent(postcode)}`,
+        { headers: { accept: "application/json", "x-api-version": "2" } },
+      );
+      if (r.ok) {
+        const j = (await r.json()) as { establishments?: Array<Record<string, unknown>> };
+        const m = j.establishments?.[0];
+        if (m) {
+          const rating = String(m["RatingValue"] ?? "");
+          update.fsa_business_id = m["FHRSID"] ?? null;
+          update.fsa_rating = rating;
+          update.fsa_rating_scheme = m["SchemeType"] ?? null;
+          update.fsa_rating_date = m["RatingDate"] ?? null;
+          update.fsa_checked_at = new Date().toISOString();
+          if (Number(rating) >= 3) update.hygiene_provided = true;
+        }
+      }
+    } catch (e) {
+      console.error("FSA lookup failed", e);
+    }
+
+    let { error } = await admin.from("partners").update(update).eq("id", venue.id);
+    if (error && /fsa_|column/i.test(error.message)) {
+      for (const k of Object.keys(update)) if (k.startsWith("fsa_")) delete update[k];
+      ({ error } = await admin.from("partners").update(update).eq("id", venue.id));
+    }
+    if (error) {
+      console.error("details update failed", error);
+      throw new Error("Could not save your details. Please try again.");
+    }
+    await admin.auth.admin
+      .updateUserById(venue.user_id, { user_metadata: { owner_name: data.ownerName, venue_name: data.name } })
+      .catch((e) => console.error("owner name save failed", e));
+    return { ok: true as const };
+  });
+
+/** Step 2: founding-partner agreement accepted. */
+export const acceptAgreement = createServerFn({ method: "POST" })
+  .inputValidator((d) => z.object({ token: tokenSchema, accepted: z.literal(true) }).parse(d))
+  .handler(async ({ data }) => {
+    const { requireVenueOwner, tapdineAdmin } = await import("./tapdine-db.server");
+    const venue = await requireVenueOwner(data.token);
+    if (venue.status !== "agreement_pending" && venue.status !== "details_pending")
+      return { ok: true as const };
+    const { error } = await tapdineAdmin()
+      .from("partners")
+      .update({ status: "compliance_pending", commission_rate: 0 })
+      .eq("id", venue.id);
+    if (error) {
+      console.error("agreement failed", error);
+      throw new Error("Could not save your agreement. Please try again.");
+    }
+    return { ok: true as const };
+  });
+
+/** Step 5: approved venue opens the portal for the first time. */
+export const enterPortal = createServerFn({ method: "POST" })
+  .inputValidator((d) => z.object({ token: tokenSchema }).parse(d))
+  .handler(async ({ data }) => {
+    const { requireVenueOwner, tapdineAdmin } = await import("./tapdine-db.server");
+    const venue = await requireVenueOwner(data.token);
+    if (venue.status !== "approved") return { ok: true as const };
+    const { error } = await tapdineAdmin().from("partners").update({ status: "active" }).eq("id", venue.id);
+    if (error) {
+      console.error("enter portal failed", error);
+      throw new Error("Could not open your portal. Please try again.");
     }
     return { ok: true as const };
   });

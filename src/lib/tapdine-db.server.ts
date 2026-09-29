@@ -35,6 +35,7 @@ export function tapdinePublicConfig() {
 
 export type OwnedVenue = {
   id: string;
+  user_id: string;
   name: string | null;
   status: string | null;
   id_provided: boolean | null;
@@ -42,7 +43,19 @@ export type OwnedVenue = {
   hygiene_provided: boolean | null;
   insurance_expiry: string | null;
   fsa_rating: string | number | null;
+  cuisine_type: string | null;
+  tel_number: string | null;
+  address1: string | null;
+  address2: string | null;
+  town: string | null;
+  postcode: string | null;
+  email: string | null;
+  website_url: string | null;
+  owner_name: string | null;
 };
+
+const VENUE_COLS =
+  "id, user_id, name, status, id_provided, insurance_provided, hygiene_provided, insurance_expiry, fsa_rating, cuisine_type, tel_number, address1, address2, town, postcode, email, website_url";
 
 /** Validates the TapDine access token and returns the partner row this user owns. */
 export async function requireVenueOwner(token: string): Promise<OwnedVenue> {
@@ -51,7 +64,7 @@ export async function requireVenueOwner(token: string): Promise<OwnedVenue> {
   if (error || !userData.user) throw new Error("Please sign in again.");
   const { data: partner, error: pErr } = await admin
     .from("partners")
-    .select("id, name, status, id_provided, insurance_provided, hygiene_provided, insurance_expiry, fsa_rating")
+    .select(VENUE_COLS)
     .eq("user_id", userData.user.id)
     .maybeSingle();
   if (pErr) {
@@ -59,7 +72,8 @@ export async function requireVenueOwner(token: string): Promise<OwnedVenue> {
     throw new Error("Could not load your venue.");
   }
   if (!partner) throw new Error("This account isn't linked to a venue yet.");
-  return partner as OwnedVenue;
+  const owner = (userData.user.user_metadata?.["owner_name"] as string | undefined) ?? null;
+  return { ...(partner as Omit<OwnedVenue, "owner_name">), owner_name: owner };
 }
 
 export const PASS_WINDOW_MS = 30 * 60 * 1000;
