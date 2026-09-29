@@ -10,3 +10,4 @@
 <!-- LOVABLE:END -->
 
 - Keep Partner Portal presentation in the shared teal-and-gold tokens in `src/styles.css` while leaving venue/offer persistence unchanged; this keeps the Launchpad-aligned brand separate from business logic.
+- TapDine payments (transactions/partners) live in the separate TapDine database; the portal reaches them only via server functions in src/lib/passes.functions.ts that validate the TapDine login token and partners.user_id first — customers must never write there.
