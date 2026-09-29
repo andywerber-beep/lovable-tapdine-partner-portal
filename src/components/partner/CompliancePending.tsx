@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Check, Clock, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { submitCompliance } from "@/lib/passes.functions";
+import { StepProgress } from "@/components/partner/OnboardingSteps";
 
 export type ComplianceVenue = {
   name: string | null;
@@ -74,6 +75,7 @@ export function CompliancePending({ venue, token, onDone, onSignOut }: { venue: 
 
   return (
     <div className="mx-auto max-w-xl space-y-6">
+      <StepProgress current={underReview ? 3 : 2} />
       <div className="text-center">
         <p className="inline-block rounded-full bg-brand-soft px-3 py-1 text-xs font-bold uppercase tracking-wide text-brand">
           {underReview ? "Verifying" : "One last step"}
