@@ -54,6 +54,65 @@ export const getMyTapdineVenue = createServerFn({ method: "POST" })
     return requireVenueOwner(data.token);
   });
 
+const docSchema = z.object({
+  name: z.string().max(200),
+  type: z.enum(["application/pdf", "image/png", "image/jpeg"]),
+  base64: z.string().max(11_000_000), // ~8MB file
+});
+
+/** Venue owner uploads ID / insurance docs; status moves to under_review for the Admin Desk. */
+export const submitCompliance = createServerFn({ method: "POST" })
+  .inputValidator((d) =>
+    z
+      .object({
+        token: tokenSchema,
+        idDoc: docSchema.optional(),
+        insuranceDoc: docSchema.optional(),
+        insuranceExpiry: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data }) => {
+    const { requireVenueOwner, tapdineAdmin } = await import("./tapdine-db.server");
+    const venue = await requireVenueOwner(data.token);
+    const admin = tapdineAdmin();
+    const needId = !venue.id_provided;
+    const needIns = !venue.insurance_provided;
+    if (needId && !data.idDoc) throw new Error("Please upload your owner ID.");
+    if (needIns && (!data.insuranceDoc || !data.insuranceExpiry))
+      throw new Error("Please upload your insurance certificate and its expiry date.");
+
+    const upload = async (prefix: string, doc: z.infer<typeof docSchema>) => {
+      const ext = doc.type === "application/pdf" ? "pdf" : doc.type === "image/png" ? "png" : "jpg";
+      const path = `${venue.id}/${prefix}_${Date.now()}.${ext}`;
+      const { error } = await admin.storage
+        .from("compliance-docs")
+        .upload(path, Buffer.from(doc.base64, "base64"), { contentType: doc.type });
+      if (error) {
+        console.error("compliance upload failed", error);
+        throw new Error("Could not upload your document. Please try again.");
+      }
+      return path;
+    };
+
+    const update: Record<string, unknown> = { status: "under_review" };
+    if (needId && data.idDoc) {
+      await upload("id_proof", data.idDoc);
+      update.id_provided = true;
+    }
+    if (needIns && data.insuranceDoc) {
+      update.insurance_doc_path = await upload("insurance", data.insuranceDoc);
+      update.insurance_provided = true;
+      update.insurance_expiry = data.insuranceExpiry;
+    }
+    const { error } = await admin.from("partners").update(update).eq("id", venue.id);
+    if (error) {
+      console.error("compliance update failed", error);
+      throw new Error("Could not save your details. Please try again.");
+    }
+    return { ok: true as const };
+  });
+
 /**
  * Registers a venue owner in the shared TapDine database and creates their
  * pending partner record so the admin desk can review them.
