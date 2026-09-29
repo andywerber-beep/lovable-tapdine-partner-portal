@@ -35,13 +35,26 @@ export const Route = createFileRoute("/sign-in")({
 function SignIn() {
   const navigate = useNavigate();
   const { redirect, signup } = Route.useSearch();
+  const loadConfig = useServerFn(getTapdineAuthConfig);
+  const register = useServerFn(registerTapdinePartner);
   const [mode, setMode] = useState<"in" | "up">(signup ? "up" : "in");
   const [show, setShow] = useState(false);
+  const [venueName, setVenueName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+
+  async function signIn() {
+    const sb = await getTapdineClient(loadConfig);
+    const { error } = await sb.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+    if (error) throw new Error("Those details didn't match. Please check and try again.");
+    navigate({ to: (redirect as "/partner/redeem") ?? "/partner/redeem" });
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -50,18 +63,11 @@ function SignIn() {
     setNotice(null);
     try {
       if (mode === "in") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        navigate({ to: (redirect as "/dashboard") ?? "/dashboard" });
+        await signIn();
       } else {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { emailRedirectTo: `${window.location.origin}/dashboard` },
-        });
-        if (error) throw error;
-        setNotice("Account created. Check your inbox to confirm, then sign in.");
-        setMode("in");
+        await register({ data: { email: email.trim(), password, venueName: venueName.trim() } });
+        setNotice("Account created. Signing you in…");
+        await signIn();
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
