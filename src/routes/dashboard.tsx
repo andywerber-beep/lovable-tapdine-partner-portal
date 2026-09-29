@@ -70,7 +70,8 @@ function Dashboard() {
       <header className="sticky top-0 z-40 flex items-center justify-between border-b border-border/60 bg-background/85 px-6 py-4 backdrop-blur">
         <Logo size={28} subtitle="Partner Portal" />
         <div className="flex items-center gap-4 text-xs text-muted-foreground">
-          
+          <Link to="/partner/redeem" className="font-semibold text-brand">Redeem</Link>
+          <Link to="/partner/earnings" className="font-semibold text-brand">Earnings</Link>
           <span className="hidden sm:inline">{user.email}</span>
           <Button
             variant="outline"
