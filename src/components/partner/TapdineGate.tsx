@@ -6,6 +6,7 @@ import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
 import { getTapdineAuthConfig, getMyTapdineVenue } from "@/lib/passes.functions";
 import { getTapdineClient } from "@/lib/tapdine-auth";
+import { CompliancePending, type ComplianceVenue } from "@/components/partner/CompliancePending";
 
 function useTapdineClient() {
   const loadConfig = useServerFn(getTapdineAuthConfig);
@@ -26,8 +27,10 @@ export function TapdineGate({ title, children }: { title: string; children: (ctx
   const loadVenue = useServerFn(getMyTapdineVenue);
   const [session, setSession] = useState<Session | null>(null);
   const [ready, setReady] = useState(false);
-  const [venueName, setVenueName] = useState<string | null>(null);
+  const [venue, setVenue] = useState<(ComplianceVenue & { status: string | null }) | null>(null);
+  const venueName = venue?.name ?? null;
   const [venueErr, setVenueErr] = useState<string | null>(null);
+  const [reload, setReload] = useState(0);
 
   useEffect(() => {
     if (!sb) return;
@@ -43,9 +46,11 @@ export function TapdineGate({ title, children }: { title: string; children: (ctx
     if (!session) return;
     setVenueErr(null);
     loadVenue({ data: { token: session.access_token } })
-      .then((v) => setVenueName(v.name))
+      .then((v) => setVenue(v))
       .catch((e) => setVenueErr(e instanceof Error ? e.message : "Could not load your venue."));
-  }, [session?.access_token, loadVenue]);
+  }, [session?.access_token, loadVenue, reload]);
+
+  const isLive = venue && ["active", "approved", "live"].includes(venue.status ?? "");
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -77,6 +82,10 @@ export function TapdineGate({ title, children }: { title: string; children: (ctx
             <SignInForm sb={sb} />
           ) : venueErr ? (
             <p className="rounded-xl border border-warning/40 bg-warning/10 p-4 text-sm">{venueErr}</p>
+          ) : !venue ? (
+            <p className="text-sm text-muted-foreground">Loading…</p>
+          ) : !isLive ? (
+            <CompliancePending venue={venue} token={session.access_token} onDone={() => setReload((n) => n + 1)} onSignOut={() => sb.auth.signOut()} />
           ) : (
             children({ token: session.access_token, venueName })
           )}

@@ -33,7 +33,16 @@ export function tapdinePublicConfig() {
   return { url: baseUrl(), key };
 }
 
-export type OwnedVenue = { id: string; name: string | null };
+export type OwnedVenue = {
+  id: string;
+  name: string | null;
+  status: string | null;
+  id_provided: boolean | null;
+  insurance_provided: boolean | null;
+  hygiene_provided: boolean | null;
+  insurance_expiry: string | null;
+  fsa_rating: string | number | null;
+};
 
 /** Validates the TapDine access token and returns the partner row this user owns. */
 export async function requireVenueOwner(token: string): Promise<OwnedVenue> {
@@ -42,7 +51,7 @@ export async function requireVenueOwner(token: string): Promise<OwnedVenue> {
   if (error || !userData.user) throw new Error("Please sign in again.");
   const { data: partner, error: pErr } = await admin
     .from("partners")
-    .select("id, name")
+    .select("id, name, status, id_provided, insurance_provided, hygiene_provided, insurance_expiry, fsa_rating")
     .eq("user_id", userData.user.id)
     .maybeSingle();
   if (pErr) {
