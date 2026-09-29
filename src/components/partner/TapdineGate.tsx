@@ -71,25 +71,25 @@ export function TapdineGate({ title, children }: { title: string; children: (ctx
         </nav>
       </header>
       <main className="mx-auto w-full max-w-4xl px-6 py-10">
-        <h1 className="font-display text-3xl font-extrabold">{title}</h1>
-        {venueName && <p className="mt-1 text-sm text-muted-foreground">{venueName}</p>}
-        <div className="mt-8">
-          {err ? (
-            <p className="text-sm text-destructive">{err}</p>
-          ) : !ready || !sb ? (
-            <p className="text-sm text-muted-foreground">Loading…</p>
-          ) : !session ? (
-            <SignInForm sb={sb} />
-          ) : venueErr ? (
-            <p className="rounded-xl border border-warning/40 bg-warning/10 p-4 text-sm">{venueErr}</p>
-          ) : !venue ? (
-            <p className="text-sm text-muted-foreground">Loading…</p>
-          ) : !isLive ? (
-            <CompliancePending venue={venue} token={session.access_token} onDone={() => setReload((n) => n + 1)} onSignOut={() => sb.auth.signOut()} />
-          ) : (
-            children({ token: session.access_token, venueName })
-          )}
-        </div>
+        {err ? (
+          <p className="text-sm text-destructive">{err}</p>
+        ) : !ready || !sb ? (
+          <p className="text-sm text-muted-foreground">Loading…</p>
+        ) : !session ? (
+          <SignInForm sb={sb} />
+        ) : venueErr ? (
+          <p className="rounded-xl border border-warning/40 bg-warning/10 p-4 text-sm">{venueErr}</p>
+        ) : !venue ? (
+          <p className="text-sm text-muted-foreground">Loading…</p>
+        ) : !isLive ? (
+          <CompliancePending venue={venue} token={session.access_token} onDone={() => setReload((n) => n + 1)} onSignOut={() => sb.auth.signOut()} />
+        ) : (
+          <>
+            <h1 className="font-display text-3xl font-extrabold">{title}</h1>
+            {venueName && <p className="mt-1 text-sm text-muted-foreground">{venueName}</p>}
+            <div className="mt-8">{children({ token: session.access_token, venueName })}</div>
+          </>
+        )}
       </main>
     </div>
   );
