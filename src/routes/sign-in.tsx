@@ -123,6 +123,24 @@ function SignIn() {
           )}
 
           <form className="mt-9 space-y-5" onSubmit={onSubmit}>
+            {mode === "up" && (
+              <div className="space-y-2">
+                <label htmlFor="venue" className="text-sm font-medium text-muted-foreground">
+                  Venue name
+                </label>
+                <input
+                  id="venue"
+                  type="text"
+                  required
+                  minLength={2}
+                  value={venueName}
+                  onChange={(e) => setVenueName(e.target.value)}
+                  placeholder="The Malt Café"
+                  className="w-full rounded-xl border border-input bg-surface px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 focus:border-brand"
+                />
+              </div>
+            )}
+
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium text-muted-foreground">
                 Email address
