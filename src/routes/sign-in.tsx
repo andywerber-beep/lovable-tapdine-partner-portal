@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { Logo } from "@/components/brand/Logo";
-import { supabase } from "@/integrations/supabase/client";
 import heroImg from "@/assets/partner-cafe.jpg";
 import { Button } from "@/components/ui/button";
+import { getTapdineClient } from "@/lib/tapdine-auth";
+import { getTapdineAuthConfig, registerTapdinePartner } from "@/lib/passes.functions";
 
 export const Route = createFileRoute("/sign-in")({
   validateSearch: (search: Record<string, unknown>): { redirect?: string; signup?: boolean } => ({
