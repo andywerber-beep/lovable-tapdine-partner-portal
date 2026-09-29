@@ -62,7 +62,11 @@ export const registerTapdinePartner = createServerFn({ method: "POST" })
   .inputValidator((d) =>
     z
       .object({
-        email: z.string().trim().email().max(255),
+        email: z
+          .string()
+          .trim()
+          .max(255)
+          .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Please enter a valid email address."),
         password: z.string().min(8).max(128),
         venueName: z.string().trim().min(2).max(120),
       })
