@@ -435,3 +435,138 @@ export const getEarnings = createServerFn({ method: "POST" })
       claims: list.slice(0, 200),
     };
   });
+
+// ---------- Offers (shared TapDine database; the Customer App reads these) ----------
+
+export type PartnerOffer = {
+  id: number;
+  title: string;
+  description: string | null;
+  discount_price: number | null;
+  image_url: string | null;
+  expires_at: string | null;
+  is_active: boolean;
+  created_at: string;
+};
+
+const OFFER_COLS = "id, title, description, discount_price, image_url, expires_at, is_active, created_at";
+
+export const getPartnerOffers = createServerFn({ method: "POST" })
+  .inputValidator((d) => z.object({ token: tokenSchema }).parse(d))
+  .handler(async ({ data }) => {
+    const { requireVenueOwner, tapdineAdmin } = await import("./tapdine-db.server");
+    const venue = await requireVenueOwner(data.token);
+    const { data: rows, error } = await tapdineAdmin()
+      .from("offers")
+      .select(OFFER_COLS)
+      .eq("venue_id", venue.id)
+      .order("created_at", { ascending: false })
+      .limit(30);
+    if (error) {
+      console.error("offers load failed", error);
+      throw new Error("Could not load your offers.");
+    }
+    return (rows ?? []) as PartnerOffer[];
+  });
+
+export const createPartnerOffer = createServerFn({ method: "POST" })
+  .inputValidator((d) =>
+    z
+      .object({
+        token: tokenSchema,
+        title: z.string().trim().min(3).max(80),
+        description: z.string().trim().min(3).max(200),
+        price: z.number().positive().max(500),
+        hours: z.number().int().min(1).max(24),
+        imageBase64: z.string().min(100).max(4_000_000),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data }) => {
+    const { requireVenueOwner, tapdineAdmin } = await import("./tapdine-db.server");
+    const venue = await requireVenueOwner(data.token);
+    if (!["active", "approved", "live"].includes(String(venue.status)))
+      throw new Error("Your venue must be approved before publishing offers.");
+    const admin = tapdineAdmin();
+    const path = `offers/${venue.id}/${Date.now()}.jpg`;
+    const bytes = Uint8Array.from(atob(data.imageBase64), (c) => c.charCodeAt(0));
+    const { error: upErr } = await admin.storage
+      .from("venue-media")
+      .upload(path, bytes, { contentType: "image/jpeg", upsert: false });
+    if (upErr) {
+      console.error("offer photo upload failed", upErr);
+      throw new Error("Could not upload the photo. Please try again.");
+    }
+    const image_url = admin.storage.from("venue-media").getPublicUrl(path).data.publicUrl;
+    // One live offer per venue keeps the map simple: retire any previous one.
+    await admin.from("offers").update({ is_active: false }).eq("venue_id", venue.id).eq("is_active", true);
+    const { error } = await admin.from("offers").insert({
+      venue_id: venue.id,
+      title: data.title,
+      description: data.description,
+      discount_price: data.price,
+      discount_type: "Flash Promotion",
+      proximity_ping: true,
+      image_url,
+      is_active: true,
+      expires_at: new Date(Date.now() + data.hours * 3_600_000).toISOString(),
+    });
+    if (error) {
+      console.error("offer insert failed", error);
+      throw new Error("Could not publish the offer.");
+    }
+    return { ok: true as const };
+  });
+
+export const retireOffer = createServerFn({ method: "POST" })
+  .inputValidator((d) => z.object({ token: tokenSchema, offerId: z.number().int().positive() }).parse(d))
+  .handler(async ({ data }) => {
+    const { requireVenueOwner, tapdineAdmin } = await import("./tapdine-db.server");
+    const venue = await requireVenueOwner(data.token);
+    const { error } = await tapdineAdmin()
+      .from("offers")
+      .update({ is_active: false, expires_at: new Date().toISOString() })
+      .eq("id", data.offerId)
+      .eq("venue_id", venue.id);
+    if (error) throw new Error("Could not end the offer.");
+    return { ok: true as const };
+  });
+
+// ---------- Live ticket board ----------
+
+export const getLiveTickets = createServerFn({ method: "POST" })
+  .inputValidator((d) => z.object({ token: tokenSchema }).parse(d))
+  .handler(async ({ data }) => {
+    const { requireVenueOwner, tapdineAdmin, PASS_WINDOW_MS } = await import("./tapdine-db.server");
+    const venue = await requireVenueOwner(data.token);
+    const { data: rows, error } = await tapdineAdmin()
+      .from("transactions")
+      .select(PASS_COLS)
+      .eq("partner_id", venue.id)
+      .is("redeemed_at", null)
+      .gt("paid_at", new Date(Date.now() - PASS_WINDOW_MS).toISOString())
+      .order("paid_at", { ascending: true })
+      .limit(50);
+    if (error) {
+      console.error("tickets failed", error);
+      throw new Error("Could not load tickets.");
+    }
+    return (rows ?? []).map((r) => toPass(r, PASS_WINDOW_MS)).filter((p) => p.state === "ready");
+  });
+
+export const markTicketServed = createServerFn({ method: "POST" })
+  .inputValidator((d) => z.object({ token: tokenSchema, id: z.number().int().positive() }).parse(d))
+  .handler(async ({ data }) => {
+    const { requireVenueOwner, tapdineAdmin } = await import("./tapdine-db.server");
+    const venue = await requireVenueOwner(data.token);
+    const { data: row, error } = await tapdineAdmin()
+      .from("transactions")
+      .update({ redeemed_at: new Date().toISOString(), status: "redeemed", redeemed: true })
+      .eq("id", data.id)
+      .eq("partner_id", venue.id)
+      .is("redeemed_at", null)
+      .select("id")
+      .maybeSingle();
+    if (error) throw new Error("Could not mark as served.");
+    return { ok: Boolean(row) };
+  });
