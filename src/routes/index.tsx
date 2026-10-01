@@ -26,193 +26,69 @@ export const Route = createFileRoute("/")({
 });
 
 const steps = [
-  {
-    n: "01",
-    title: "Create your venue account",
-    body: "Coffee shop, café, sandwich bar, deli or restaurant — sign up and start setting up your venue.",
-  },
-  {
-    n: "02",
-    title: "Add your venue details",
-    body: "Location, opening hours and a link to your own website or menu so customers can browse.",
-  },
-  {
-    n: "03",
-    title: "Publish an offer",
-    body: "“10% off your morning coffee.” Add a photo, set a price and choose how long it stays live.",
-  },
-  {
-    n: "04",
-    title: "Nearby customers get pinged",
-    body: "Anyone in range sees your deal on the map and gets a notification while it's still valid.",
-  },
+  { n: "1", title: "Snap & post a deal", body: "Take a photo of the real dish, set a price and how long it runs. Takes a minute." },
+  { n: "2", title: "Light up the map", body: "While your offer is live, your pin glows and people nearby get pinged." },
+  { n: "3", title: "Serve from the counter", body: "Paid orders chime on your Live Counter screen. One tap to mark served." },
 ];
-
-const values = [
-  {
-    title: "Proximity pings",
-    body: "People walking within a few streets of you get your offer the moment you publish it.",
-    stat: "≤ 400m",
-    label: "Typical ping radius",
-  },
-  {
-    title: "Offers that expire",
-    body: "Set a window — two hours, one afternoon — and the deal retires itself. No stale vouchers.",
-    stat: "2 hrs",
-    label: "Common offer window",
-  },
-  {
-    title: "Your menu, your site",
-    body: "Link your own website or menu so customers browse you properly before they walk in.",
-    stat: "1 link",
-    label: "Straight to your menu",
-  },
-];
-
 
 function Landing() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SiteNav />
-
       <main>
-        {/* Hero */}
         <section className="relative overflow-hidden">
-          <img
-            src={heroImg}
-            alt="Barista serving coffee and a sandwich at a sunny Brighton café"
-            width={1600}
-            height={1104}
-            className="absolute inset-0 h-full w-full object-cover object-center"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/10" />
-          <div className="relative mx-auto w-full max-w-6xl px-5 py-16 md:py-28">
-            <span className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-1.5 text-xs font-extrabold uppercase text-secondary-foreground">
-              For local food spots
+          <img src={heroImg} alt="Barista serving coffee and a sandwich at a sunny café" width={1600} height={1104} className="absolute inset-0 h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/85 to-background/20" />
+          <div className="relative mx-auto w-full max-w-6xl px-5 py-12 md:py-20">
+            <span className="inline-flex rounded-full bg-secondary px-4 py-1.5 text-xs font-extrabold uppercase text-secondary-foreground">
+              Founding partners: 0% commission for 3 months
             </span>
-            <h1 className="mt-7 max-w-2xl text-5xl font-black leading-tight md:text-7xl">
-              More local love for your venue.
-            </h1>
-            <p className="mt-6 max-w-lg text-lg font-semibold text-foreground">
-              Turn quiet hours into busy ones. Put your best deals in front of people nearby, right when they’re hungry.
+            <h1 className="mt-5 max-w-2xl text-4xl font-black leading-tight md:text-6xl">Turn quiet hours into busy ones.</h1>
+            <p className="mt-4 max-w-lg text-lg font-semibold">
+              Post a deal with a photo and TapDine pings hungry people walking nearby — straight to your counter.
             </p>
-            <div className="mt-10 flex flex-wrap items-center gap-4">
-              <Link
-                to="/sign-in"
-                 search={{ signup: true }}
-                className="glow rounded-full bg-brand px-7 py-3.5 text-base font-bold text-brand-foreground transition-transform hover:scale-[1.03]"
-              >
-                Become a partner
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <Link to="/sign-in" search={{ signup: true }} className="glow rounded-full bg-brand px-7 py-3.5 text-base font-bold text-brand-foreground transition-transform hover:scale-[1.03]">
+                Start with 0% commission
               </Link>
-              <Link
-                to="/dashboard"
-                className="rounded-full border border-border px-7 py-3.5 text-base font-semibold text-foreground transition-colors hover:bg-surface"
-              >
-                See the portal
-              </Link>
+              <span className="text-sm font-semibold text-muted-foreground">Then a flat 10% · £0 monthly fees · no hidden costs</span>
             </div>
-            <dl className="mt-12 grid max-w-2xl grid-cols-2 gap-6 border-t border-foreground/20 pt-6 sm:grid-cols-3">
-              {[
-                ["0%", "First 3 months"],
-                ["10%", "Flat rate after"],
-                ["£0", "Monthly fees"],
-              ].map(([v, l]) => (
-                <div key={l}>
-                  <dt className="font-display text-3xl font-bold text-foreground">{v}</dt>
-                  <dd className="mt-1 text-sm text-muted-foreground">{l}</dd>
-                </div>
-              ))}
-            </dl>
           </div>
         </section>
 
-        {/* Value */}
-        <section id="value" className="mx-auto w-full max-w-6xl px-5 py-20">
-          <h2 className="max-w-2xl text-4xl font-bold md:text-5xl">
-            Built for the quiet hour you want to fill.
-          </h2>
-
-          <div className="mt-14 grid gap-6 md:grid-cols-3">
-            {values.map((v) => (
-              <article
-                key={v.title}
-                 className="rounded-lg border border-border bg-surface p-7 transition-colors hover:border-brand/50"
-              >
-                <p className="font-display text-4xl font-bold text-brand">{v.stat}</p>
-                <p className="mt-1 text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                  {v.label}
-                </p>
-                <h3 className="mt-7 text-xl font-semibold">{v.title}</h3>
-                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{v.body}</p>
-              </article>
+        <section id="how" className="mx-auto w-full max-w-6xl px-5 py-14">
+          <h2 className="text-3xl font-bold md:text-4xl">How it works</h2>
+          <ol className="mt-8 grid gap-4 md:grid-cols-3">
+            {steps.map((s) => (
+              <li key={s.n} className="rounded-2xl border border-border bg-surface p-5">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-sm font-black text-brand-foreground">{s.n}</span>
+                <h3 className="mt-3 text-lg font-bold">{s.title}</h3>
+                <p className="mt-1 text-sm text-muted-foreground">{s.body}</p>
+              </li>
             ))}
-          </div>
-        </section>
-
-        <section id="pricing" className="bg-brand py-16 text-brand-foreground">
-          <div className="mx-auto flex max-w-6xl flex-col gap-7 px-5 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="font-bold uppercase text-sm">Founding partner offer</p>
-              <h2 className="mt-2 max-w-xl text-4xl font-black md:text-5xl">0% commission for your first 3 months.</h2>
-              <p className="mt-4 max-w-lg text-base">After that, a flat 10% commission. No monthly fees or hidden costs.</p>
-            </div>
-            <Link to="/sign-in" search={{ signup: true }} className="shrink-0 self-start rounded-full bg-secondary px-7 py-3.5 font-extrabold text-secondary-foreground hover:bg-secondary/90">Join as a founding partner</Link>
-          </div>
-        </section>
-
-        {/* How it works */}
-        <section id="how" className="border-y border-border/60 bg-accent/40">
-          <div className="mx-auto grid w-full max-w-6xl gap-14 px-5 py-24 lg:grid-cols-2 lg:items-center">
-            <div>
-              <h2 className="text-4xl font-bold md:text-5xl">From signup to first ping</h2>
-              <p className="mt-4 max-w-md text-muted-foreground">
-                Four steps, no sales call, no integration project.
-              </p>
-
-              <ol className="mt-10 space-y-8">
-                {steps.map((s) => (
-                  <li key={s.n} className="flex gap-5">
-                    <span className="mt-0.5 font-display text-sm font-bold tracking-widest text-brand">
-                      {s.n}
-                    </span>
-                    <div>
-                      <h3 className="text-lg font-semibold">{s.title}</h3>
-                      <p className="mt-1.5 text-sm text-muted-foreground">{s.body}</p>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            </div>
-            <img
-              src={phoneImg}
-              alt="Customer receiving a TapDine proximity offer ping on their phone"
-              loading="lazy"
-              width={1200}
-              height={912}
-               className="w-full rounded-lg object-cover"
-            />
-          </div>
-        </section>
-
-        {/* CTA */}
-        <section className="mx-auto w-full max-w-6xl px-5 py-28 text-center">
-          <h2 className="mx-auto max-w-2xl text-4xl font-bold md:text-6xl">
-            Your next busy hour starts with one offer.
-          </h2>
-          <p className="mx-auto mt-5 max-w-lg text-muted-foreground">
-             Join TapDine as a founding partner: your first 3 months are commission-free, then it’s a flat 10%. No monthly fees or hidden costs.
+          </ol>
+          <p id="value" className="mt-6 text-sm text-muted-foreground">
+            You only appear on the customer map while you have a live offer — so every view is someone who can buy right now.
           </p>
+        </section>
 
-          <Link
-            to="/sign-in"
-             search={{ signup: true }}
-            className="glow mt-10 inline-block rounded-full bg-brand px-9 py-4 text-base font-semibold text-brand-foreground transition-transform hover:scale-[1.03]"
-          >
-            Create your partner account
-          </Link>
+        <section id="pricing" className="mx-auto w-full max-w-6xl px-5 pb-16">
+          <div className="grid items-center gap-8 rounded-3xl bg-accent/50 p-6 md:grid-cols-[1.3fr_1fr] md:p-10">
+            <div>
+              <h2 className="text-3xl font-bold">Simple pricing</h2>
+              <ul className="mt-4 space-y-2 text-base font-semibold">
+                <li>0% commission for your first 3 months</li>
+                <li>Flat 10% per sale after that</li>
+                <li>No monthly fees, no hidden costs</li>
+              </ul>
+              <Link to="/sign-in" search={{ signup: true }} className="mt-6 inline-block rounded-full bg-brand px-7 py-3.5 font-bold text-brand-foreground transition-transform hover:scale-[1.03]">
+                Create your partner account
+              </Link>
+            </div>
+            <img src={phoneImg} alt="Customer receiving a TapDine offer ping on their phone" loading="lazy" width={1200} height={912} className="w-full rounded-2xl object-cover" />
+          </div>
         </section>
       </main>
-
       <SiteFooter />
     </div>
   );

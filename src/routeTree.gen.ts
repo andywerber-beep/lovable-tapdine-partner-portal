@@ -14,6 +14,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as PartnerEarningsRouteImport } from './routes/partner.earnings'
 import { Route as PartnerRedeemRouteImport } from './routes/partner.redeem'
+import { Route as PartnerTicketsRouteImport } from './routes/partner.tickets'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -40,6 +41,11 @@ const PartnerRedeemRoute = PartnerRedeemRouteImport.update({
   path: '/partner/redeem',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PartnerTicketsRoute = PartnerTicketsRouteImport.update({
+  id: '/partner/tickets',
+  path: '/partner/tickets',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -47,6 +53,7 @@ export interface FileRoutesByFullPath {
   '/sign-in': typeof SignInRoute
   '/partner/earnings': typeof PartnerEarningsRoute
   '/partner/redeem': typeof PartnerRedeemRoute
+  '/partner/tickets': typeof PartnerTicketsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -54,6 +61,7 @@ export interface FileRoutesByTo {
   '/sign-in': typeof SignInRoute
   '/partner/earnings': typeof PartnerEarningsRoute
   '/partner/redeem': typeof PartnerRedeemRoute
+  '/partner/tickets': typeof PartnerTicketsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -62,13 +70,25 @@ export interface FileRoutesById {
   '/sign-in': typeof SignInRoute
   '/partner/earnings': typeof PartnerEarningsRoute
   '/partner/redeem': typeof PartnerRedeemRoute
+  '/partner/tickets': typeof PartnerTicketsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/dashboard' | '/sign-in' | '/partner/earnings' | '/partner/redeem'
+    | '/'
+    | '/dashboard'
+    | '/sign-in'
+    | '/partner/earnings'
+    | '/partner/redeem'
+    | '/partner/tickets'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/sign-in' | '/partner/earnings' | '/partner/redeem'
+  to:
+    | '/'
+    | '/dashboard'
+    | '/sign-in'
+    | '/partner/earnings'
+    | '/partner/redeem'
+    | '/partner/tickets'
   id:
     | '__root__'
     | '/'
@@ -76,6 +96,7 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/partner/earnings'
     | '/partner/redeem'
+    | '/partner/tickets'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -84,6 +105,7 @@ export interface RootRouteChildren {
   SignInRoute: typeof SignInRoute
   PartnerEarningsRoute: typeof PartnerEarningsRoute
   PartnerRedeemRoute: typeof PartnerRedeemRoute
+  PartnerTicketsRoute: typeof PartnerTicketsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -123,6 +145,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PartnerRedeemRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/partner/tickets': {
+      id: '/partner/tickets'
+      path: '/partner/tickets'
+      fullPath: '/partner/tickets'
+      preLoaderRoute: typeof PartnerTicketsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -132,6 +161,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignInRoute: SignInRoute,
   PartnerEarningsRoute: PartnerEarningsRoute,
   PartnerRedeemRoute: PartnerRedeemRoute,
+  PartnerTicketsRoute: PartnerTicketsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
