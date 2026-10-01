@@ -35,7 +35,7 @@ async function optimise(file: File): Promise<{ base64: string; preview: string; 
   const ctx = c.getContext("2d")!;
   ctx.drawImage(bmp, sx, sy, sw, sh, 0, 0, w, h);
   const preview = c.toDataURL("image/jpeg", 0.82);
-  return { base64: preview.split(",")[1], preview, small: w < 800 };
+  return { base64: preview.split(",")[1] ?? "", preview, small: w < 800 };
 }
 
 function Offers({ token }: { token: string }) {
