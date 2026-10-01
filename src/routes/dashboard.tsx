@@ -1,445 +1,173 @@
-import { useEffect, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Logo } from "@/components/brand/Logo";
+import { useEffect, useRef, useState } from "react";
+import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/useAuth";
-import {
-  fetchMyVenue,
-  fetchVenueOffers,
-  timeLeft,
-  daysUntil,
-  type Venue,
-} from "@/lib/tapdine";
+import { TapdineGate, gbp } from "@/components/partner/TapdineGate";
+import { createPartnerOffer, getPartnerOffers, retireOffer } from "@/lib/passes.functions";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
-      { title: "Partner Portal — Publish TapDine Offers" },
-      {
-        name: "description",
-        content:
-          "Manage your TapDine venue: publish time-limited offers with photos, link your menu, upload your public liability certificate and track approval.",
-      },
-      { property: "og:title", content: "Partner Portal — Publish TapDine Offers" },
-      {
-        property: "og:description",
-        content: "Publish an offer, set the expiry, and ping every customer nearby.",
-      },
+      { title: "Your Offers — TapDine Partner Portal" },
+      { name: "description", content: "Publish a time-limited food deal with a real photo and go live on the TapDine customer map." },
+      { property: "og:title", content: "Your Offers — TapDine Partner Portal" },
+      { property: "og:description", content: "Snap a photo, set a price and a time limit, and ping customers nearby." },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   ssr: false,
-  component: Dashboard,
+  component: () => <TapdineGate title="Your offers">{({ token }) => <Offers token={token} />}</TapdineGate>,
 });
 
-function Dashboard() {
-  const { user, loading } = useAuth();
+/** Centre-crop to 4:3, resize to max 1600px wide, re-encode as JPEG — all in the browser. */
+async function optimise(file: File): Promise<{ base64: string; preview: string; small: boolean }> {
+  const bmp = await createImageBitmap(file);
+  const ratio = 4 / 3;
+  let sw = bmp.width, sh = bmp.height;
+  if (sw / sh > ratio) sw = sh * ratio; else sh = sw / ratio;
+  const sx = (bmp.width - sw) / 2, sy = (bmp.height - sh) / 2;
+  const w = Math.min(1600, Math.round(sw));
+  const h = Math.round(w / ratio);
+  const c = document.createElement("canvas");
+  c.width = w; c.height = h;
+  const ctx = c.getContext("2d")!;
+  ctx.drawImage(bmp, sx, sy, sw, sh, 0, 0, w, h);
+  const preview = c.toDataURL("image/jpeg", 0.82);
+  return { base64: preview.split(",")[1], preview, small: w < 800 };
+}
+
+function Offers({ token }: { token: string }) {
   const qc = useQueryClient();
+  const list = useServerFn(getPartnerOffers);
+  const create = useServerFn(createPartnerOffer);
+  const retire = useServerFn(retireOffer);
+  const fileRef = useRef<HTMLInputElement>(null);
 
-  const { data: venue, isLoading } = useQuery({
-    queryKey: ["my-venue", user?.id],
-    enabled: Boolean(user?.id),
-    queryFn: () => fetchMyVenue(user!.id),
-  });
-
-  if (loading) return <Shell><p className="text-sm text-muted-foreground">Loading…</p></Shell>;
-
-  if (!user) {
-    return (
-      <Shell>
-        <h1 className="text-2xl font-bold">Partner portal</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Sign in to manage your venue and publish offers.
-        </p>
-        <Link
-          to="/sign-in"
-          search={{ redirect: "/dashboard" }}
-          className="mt-6 inline-block rounded-full bg-brand px-6 py-3 text-sm font-semibold text-brand-foreground"
-        >
-          Sign in
-        </Link>
-      </Shell>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-40 flex items-center justify-between border-b border-border/60 bg-background/85 px-6 py-4 backdrop-blur">
-        <Logo size={28} subtitle="Partner Portal" />
-        <div className="flex items-center gap-4 text-xs text-muted-foreground">
-          <Link to="/partner/redeem" className="font-semibold text-brand">Redeem</Link>
-          <Link to="/partner/earnings" className="font-semibold text-brand">Earnings</Link>
-          <span className="hidden sm:inline">{user.email}</span>
-          <Button
-            variant="outline"
-            onClick={() => supabase.auth.signOut()}
-            className="rounded-full"
-          >
-            Sign out
-          </Button>
-        </div>
-      </header>
-
-      <main className="mx-auto w-full max-w-5xl space-y-8 px-6 py-10">
-        {isLoading ? (
-          <p className="text-sm text-muted-foreground">Loading your venue…</p>
-        ) : (
-          <>
-            <div className="border-l-4 border-brand bg-brand-soft px-5 py-4">
-              <p className="font-display text-base font-extrabold">Founding partner pricing</p>
-              <p className="mt-1 text-sm text-muted-foreground">0% commission for your first 3 months, then a flat 10% commission. No monthly fees or hidden costs.</p>
-            </div>
-            <StatusBanner venue={venue ?? null} />
-            <VenueForm
-              venue={venue ?? null}
-              userId={user.id}
-              onSaved={() => qc.invalidateQueries({ queryKey: ["my-venue", user.id] })}
-            />
-            {venue && <OffersPanel venue={venue} />}
-          </>
-        )}
-      </main>
-    </div>
-  );
-}
-
-function Shell({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="border-b border-border/60 px-6 py-4">
-        <Logo size={28} subtitle="Partner Portal" />
-      </header>
-      <main className="mx-auto w-full max-w-3xl px-6 py-20">{children}</main>
-    </div>
-  );
-}
-
-function StatusBanner({ venue }: { venue: Venue | null }) {
-  if (!venue) {
-    return (
-      <div className="rounded-lg border border-warning/40 bg-warning/10 p-5">
-        <p className="text-sm font-semibold text-warning">Step 1 — tell us about your venue</p>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Add your details and upload your public liability certificate. The admin desk verifies
-          the certificate and records its expiry date, then your pin goes live.
-        </p>
-      </div>
-    );
-  }
-  const days = daysUntil(venue.insurance_expiry);
-  const tone =
-    venue.status === "approved"
-      ? "border-success/40 bg-success/10 text-success"
-      : venue.status === "rejected"
-        ? "border-brand/40 bg-brand/10 text-brand"
-        : "border-warning/40 bg-warning/10 text-warning";
-  return (
-    <div className={`rounded-lg border p-5 ${tone}`}>
-      <p className="text-sm font-semibold capitalize">
-        {venue.status === "approved"
-          ? "Live on the customer map"
-          : venue.status === "rejected"
-            ? "Not approved"
-            : "Awaiting verification"}
-      </p>
-      <p className="mt-1 text-sm text-muted-foreground">
-        {venue.review_note ||
-          (venue.status === "approved"
-            ? days !== null
-              ? `Insurance cover recorded — ${days} days remaining.`
-              : "Approved."
-            : "The admin desk is checking your certificate.")}
-      </p>
-    </div>
-  );
-}
-
-const EMPTY = {
-  name: "",
-  category: "Coffee shop",
-  address: "",
-  lat: "51.5155",
-  lng: "-0.1225",
-  website_url: "",
-  menu_url: "",
-  phone: "",
-};
-
-function VenueForm({
-  venue,
-  userId,
-  onSaved,
-}: {
-  venue: Venue | null;
-  userId: string;
-  onSaved: () => void;
-}) {
-  const [form, setForm] = useState(EMPTY);
-  const [msg, setMsg] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
-
-  useEffect(() => {
-    if (!venue) return;
-    setForm({
-      name: venue.name,
-      category: venue.category,
-      address: venue.address,
-      lat: String(venue.lat),
-      lng: String(venue.lng),
-      website_url: venue.website_url ?? "",
-      menu_url: venue.menu_url ?? "",
-      phone: venue.phone ?? "",
-    });
-  }, [venue]);
-
-  const save = useMutation({
-    mutationFn: async () => {
-      const payload = {
-        owner_id: userId,
-        name: form.name,
-        category: form.category,
-        address: form.address,
-        lat: Number(form.lat),
-        lng: Number(form.lng),
-        website_url: form.website_url || null,
-        menu_url: form.menu_url || null,
-        phone: form.phone || null,
-      };
-      const { error } = venue
-        ? await supabase.from("venues").update(payload).eq("id", venue.id)
-        : await supabase.from("venues").insert(payload);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      setMsg("Saved.");
-      onSaved();
-    },
-    onError: (e) => setMsg(e instanceof Error ? e.message : "Could not save."),
-  });
-
-  async function uploadCert(file: File) {
-    if (!venue) return;
-    setUploading(true);
-    const path = `${userId}/${Date.now()}-${file.name}`;
-    const { error } = await supabase.storage.from("compliance-docs").upload(path, file);
-    if (!error) {
-      await supabase.from("venues").update({ insurance_doc_path: path }).eq("id", venue.id);
-      onSaved();
-      setMsg("Certificate uploaded — the admin desk will verify it.");
-    } else {
-      setMsg(error.message);
-    }
-    setUploading(false);
-  }
-
-  const field = (k: keyof typeof EMPTY, label: string, type = "text") => (
-    <label className="block text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-      {label}
-      <input
-        type={type}
-        value={form[k]}
-        onChange={(e) => setForm({ ...form, [k]: e.target.value })}
-        className="mt-2 w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm font-normal normal-case tracking-normal text-foreground focus:border-brand focus:outline-none"
-      />
-    </label>
-  );
-
-  return (
-    <section className="rounded-lg border border-border bg-surface p-6">
-      <h2 className="text-lg font-bold">Venue profile</h2>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Your pin position, menu link and contact details on the customer map.
-      </p>
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
-        {field("name", "Venue name")}
-        {field("category", "Category")}
-        <div className="sm:col-span-2">{field("address", "Address")}</div>
-        {field("lat", "Latitude")}
-        {field("lng", "Longitude")}
-        {field("website_url", "Website")}
-        {field("menu_url", "Menu link")}
-        {field("phone", "Phone")}
-      </div>
-
-      <div className="mt-6 flex flex-wrap items-center gap-3">
-        <Button
-          disabled={save.isPending || !form.name}
-          onClick={() => save.mutate()}
-          className="rounded-full px-6"
-        >
-          {venue ? "Save changes" : "Create venue"}
-        </Button>
-        {venue && (
-          <label className="cursor-pointer rounded-full border border-border px-5 py-2.5 text-sm font-semibold hover:bg-surface-raised">
-            {uploading
-              ? "Uploading…"
-              : venue.insurance_doc_path
-                ? "Replace insurance certificate"
-                : "Upload insurance certificate"}
-            <input
-              type="file"
-              accept="application/pdf,image/*"
-              className="hidden"
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) void uploadCert(f);
-              }}
-            />
-          </label>
-        )}
-        {msg && <span className="text-xs text-muted-foreground">{msg}</span>}
-      </div>
-    </section>
-  );
-}
-
-function OffersPanel({ venue }: { venue: Venue }) {
-  const qc = useQueryClient();
   const [title, setTitle] = useState("");
+  const [desc, setDesc] = useState("");
   const [price, setPrice] = useState("");
   const [hours, setHours] = useState(2);
-  const [photo, setPhoto] = useState<File | null>(null);
+  const [photo, setPhoto] = useState<{ base64: string; preview: string; small: boolean } | null>(null);
+  const [showTips, setShowTips] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+  const [, tick] = useState(0);
+  useEffect(() => { const t = setInterval(() => tick((n) => n + 1), 30_000); return () => clearInterval(t); }, []);
 
-  const { data: offers = [] } = useQuery({
-    queryKey: ["venue-offers", venue.id],
-    queryFn: () => fetchVenueOffers(venue.id),
+  const { data: offers = [], isLoading } = useQuery({
+    queryKey: ["partner-offers"],
+    queryFn: () => list({ data: { token } }),
     refetchInterval: 60_000,
   });
+  const isLive = (o: (typeof offers)[number]) => o.is_active && o.expires_at && new Date(o.expires_at).getTime() > Date.now();
+  const live = offers.filter(isLive);
+  const past = offers.filter((o) => !isLive(o));
+
+  async function pick(f: File | undefined) {
+    if (!f) return;
+    try { setPhoto(await optimise(f)); setMsg(null); } catch { setMsg("That photo couldn't be read — try a JPG or PNG."); }
+  }
 
   async function publish() {
-    setBusy(true);
-    let image_url: string | null = null;
-    if (photo) {
-      const path = `${venue.id}/${Date.now()}-${photo.name}`;
-      const { error } = await supabase.storage.from("offer-photos").upload(path, photo);
-      if (!error) {
-        image_url = supabase.storage.from("offer-photos").getPublicUrl(path).data.publicUrl;
-      }
-    }
-    const { error } = await supabase.from("offers").insert({
-      venue_id: venue.id,
-      title,
-      price_text: price || null,
-      image_url,
-      starts_at: new Date().toISOString(),
-      expires_at: new Date(Date.now() + hours * 3_600_000).toISOString(),
-    });
+    if (!photo) return;
+    setBusy(true); setMsg(null);
+    try {
+      await create({ data: { token, title, description: desc, price: Number(price), hours, imageBase64: photo.base64 } });
+      setTitle(""); setDesc(""); setPrice(""); setPhoto(null);
+      setMsg("You're live! Nearby customers are being pinged.");
+      qc.invalidateQueries({ queryKey: ["partner-offers"] });
+    } catch (e) { setMsg(e instanceof Error ? e.message : "Could not publish."); }
     setBusy(false);
-    if (error) return alert(error.message);
-    setTitle("");
-    setPrice("");
-    setPhoto(null);
-    qc.invalidateQueries({ queryKey: ["venue-offers", venue.id] });
-    qc.invalidateQueries({ queryKey: ["public-venues"] });
   }
 
-  async function endOffer(id: string) {
-    await supabase.from("offers").update({ expires_at: new Date().toISOString() }).eq("id", id);
-    qc.invalidateQueries({ queryKey: ["venue-offers", venue.id] });
-    qc.invalidateQueries({ queryKey: ["public-venues"] });
+  async function end(id: number) {
+    await retire({ data: { token, offerId: id } });
+    qc.invalidateQueries({ queryKey: ["partner-offers"] });
   }
 
-  const live = offers.filter((o) => new Date(o.expires_at).getTime() > Date.now());
-  const past = offers.filter((o) => new Date(o.expires_at).getTime() <= Date.now());
+  const priceOk = Number(price) > 0;
+  const ready = photo && title.trim().length >= 3 && desc.trim().length >= 3 && priceOk;
+  const input = "w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm focus:border-brand focus:outline-none";
 
   return (
-    <section className="rounded-lg border border-border bg-surface p-6">
-      <h2 className="text-lg font-bold">Offer board</h2>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Publishing an offer turns your pin green and pings every customer inside your radius until
-        the countdown ends.
-      </p>
-
-      <div className="mt-6 grid gap-3 sm:grid-cols-[2fr_1fr_auto_auto]">
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="10% off lobster rolls"
-          className="rounded-xl border border-border bg-background px-3 py-2.5 text-sm focus:border-brand focus:outline-none"
-        />
-        <input
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-          placeholder="£8.50"
-          className="rounded-xl border border-border bg-background px-3 py-2.5 text-sm focus:border-brand focus:outline-none"
-        />
-        <select
-          value={hours}
-          onChange={(e) => setHours(Number(e.target.value))}
-          className="rounded-xl border border-border bg-background px-3 py-2.5 text-sm"
-        >
-          {[1, 2, 3, 4, 6, 8, 12, 24].map((h) => (
-            <option key={h} value={h}>
-              {h}h
-            </option>
-          ))}
-        </select>
-        <Button
-          disabled={busy || !title || venue.status !== "approved"}
-          onClick={publish}
-          className="rounded-lg bg-success px-5 text-success-foreground hover:bg-success/90"
-        >
-          {busy ? "Publishing…" : "Publish"}
-        </Button>
-      </div>
-
-      <label className="mt-3 inline-block cursor-pointer text-xs font-semibold text-brand">
-        {photo ? photo.name : "+ Add a photo (optional)"}
-        <input
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(e) => setPhoto(e.target.files?.[0] ?? null)}
-        />
-      </label>
-      {venue.status !== "approved" && (
-        <p className="mt-2 text-xs text-warning">
-          Offers can be published once the admin desk approves your venue.
+    <div className="space-y-8">
+      {!isLoading && live.length === 0 && (
+        <p className="rounded-xl border border-warning/40 bg-warning/10 p-4 text-sm font-semibold">
+          You're currently hidden from customers — publish an offer with a photo to go live on the map.
         </p>
       )}
 
-      <div className="mt-8 space-y-2">
-        {live.map((o) => (
-          <div
-            key={o.id}
-            className="flex items-center gap-3 rounded-lg border border-success/30 bg-success/5 px-4 py-3"
-          >
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="pin-pulse absolute inset-0 rounded-full bg-success" />
-              <span className="relative h-2.5 w-2.5 rounded-full bg-success" />
-            </span>
-            <span className="min-w-0 flex-1 truncate text-sm font-semibold">
-              {o.title}
-              {o.price_text ? ` · ${o.price_text}` : ""}
-            </span>
-            <span className="text-xs text-warning">{timeLeft(o.expires_at)}</span>
-            <Button
-              variant="outline"
-              onClick={() => endOffer(o.id)}
-              className="h-7 rounded-full px-3 text-xs"
+      {live.map((o) => (
+        <div key={o.id} className="flex items-center gap-4 rounded-2xl border border-success/40 bg-success/10 p-4">
+          {o.image_url && <img src={o.image_url} alt={o.title} className="h-20 w-28 rounded-lg object-cover" />}
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-bold uppercase text-success">Live on the map</p>
+            <p className="truncate font-display text-lg font-extrabold">{o.title}</p>
+            <p className="text-sm text-muted-foreground">
+              {o.discount_price != null && gbp(Number(o.discount_price))} · {Math.max(0, Math.round((new Date(o.expires_at!).getTime() - Date.now()) / 60000))} min left
+            </p>
+          </div>
+          <Button variant="outline" className="rounded-full" onClick={() => end(o.id)}>End now</Button>
+        </div>
+      ))}
+
+      <section className="rounded-2xl border border-border bg-surface p-6">
+        <h2 className="font-display text-xl font-extrabold">{live.length ? "Replace with a new offer" : "Create an offer"}</h2>
+        <div className="mt-5 grid gap-6 md:grid-cols-[1fr_1.2fr]">
+          <div>
+            <button
+              type="button"
+              onClick={() => { setShowTips(true); fileRef.current?.click(); }}
+              className="flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-border bg-background text-sm font-semibold text-muted-foreground hover:border-brand"
             >
-              End now
+              {photo ? <img src={photo.preview} alt="Offer preview" className="h-full w-full object-cover" /> : "Take or choose a photo"}
+            </button>
+            <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => pick(e.target.files?.[0])} />
+            {photo?.small && <p className="mt-2 text-xs text-warning">This photo is quite small and may look blurry — try a closer, sharper shot.</p>}
+            {showTips && (
+              <div className="mt-3 rounded-xl bg-brand-soft p-4 text-xs leading-relaxed">
+                <p className="font-bold">Tips for a photo that sells</p>
+                <ul className="mt-1 list-disc pl-4">
+                  <li>Photograph the real item customers will get — no stock images.</li>
+                  <li>Use daylight near a window; avoid flash.</li>
+                  <li>Fill the frame with the food, on a clean plate or surface.</li>
+                  <li>Hold steady. We crop and resize it automatically.</li>
+                </ul>
+              </div>
+            )}
+          </div>
+          <div className="space-y-3">
+            <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Headline, e.g. 20% off lobster rolls" maxLength={80} className={input} />
+            <input value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="What they get, e.g. Lobster roll in brioche with Marie Rose" maxLength={200} className={input} />
+            <div className="grid grid-cols-2 gap-3">
+              <input value={price} onChange={(e) => setPrice(e.target.value.replace(/[^0-9.]/g, ""))} placeholder="Price £" inputMode="decimal" className={input} />
+              <select value={hours} onChange={(e) => setHours(Number(e.target.value))} className={input}>
+                {[1, 2, 3, 4, 6, 8, 12, 24].map((h) => <option key={h} value={h}>Live for {h}h</option>)}
+              </select>
+            </div>
+            <Button disabled={!ready || busy} onClick={publish} className="h-12 w-full rounded-full text-base font-extrabold">
+              {busy ? "Publishing…" : photo ? "Publish offer" : "Add a photo to publish"}
             </Button>
+            {msg && <p className="text-sm font-semibold">{msg}</p>}
           </div>
-        ))}
-        {live.length === 0 && (
-          <p className="text-sm text-muted-foreground">No live offers right now.</p>
-        )}
-        {past.slice(0, 5).map((o) => (
-          <div
-            key={o.id}
-            className="flex items-center gap-3 rounded-lg border border-border/60 px-4 py-2.5 text-xs text-muted-foreground"
-          >
-            <span className="h-2 w-2 rounded-full bg-muted-foreground/40" />
-            <span className="flex-1 truncate">{o.title}</span>
-            <span>expired</span>
+        </div>
+      </section>
+
+      {past.length > 0 && (
+        <section>
+          <h3 className="text-sm font-bold uppercase text-muted-foreground">Past offers</h3>
+          <div className="mt-3 space-y-2">
+            {past.slice(0, 8).map((o) => (
+              <div key={o.id} className="flex items-center gap-3 rounded-xl border border-border/60 px-4 py-2.5 text-sm text-muted-foreground">
+                <span className="flex-1 truncate">{o.title}</span>
+                <span>ended</span>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-    </section>
+        </section>
+      )}
+    </div>
   );
 }
