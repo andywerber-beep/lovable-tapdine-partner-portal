@@ -40,26 +40,23 @@ function Row({ ok, pending, title, sub }: { ok: boolean; pending?: boolean; titl
 
 export function CompliancePending({ venue, token, onDone, onSignOut }: { venue: ComplianceVenue; token: string; onDone: () => void; onSignOut: () => void }) {
   const submit = useServerFn(submitCompliance);
-  const [idFile, setIdFile] = useState<File | null>(null);
   const [insFile, setInsFile] = useState<File | null>(null);
   const [expiry, setExpiry] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-  const needsUploads = !venue.id_provided || !venue.insurance_provided;
+  const needsUploads = !venue.insurance_provided;
   const underReview = venue.status === "under_review";
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErr(null);
-    if (!venue.id_provided && !idFile) return setErr("Please upload your owner ID.");
     if (!venue.insurance_provided && (!insFile || !expiry)) return setErr("Please upload your insurance certificate and add its expiry date.");
-    for (const f of [idFile, insFile]) if (f && f.size > 8 * 1024 * 1024) return setErr("Each file must be under 8MB.");
+    for (const f of [insFile]) if (f && f.size > 8 * 1024 * 1024) return setErr("Each file must be under 8MB.");
     setBusy(true);
     try {
       await submit({
         data: {
           token,
-          idDoc: !venue.id_provided && idFile ? await toDoc(idFile) : undefined,
           insuranceDoc: !venue.insurance_provided && insFile ? await toDoc(insFile) : undefined,
           insuranceExpiry: !venue.insurance_provided ? expiry : undefined,
         },
@@ -86,23 +83,16 @@ export function CompliancePending({ venue, token, onDone, onSignOut }: { venue: 
         <p className="mt-2 text-sm text-muted-foreground">
           {underReview
             ? "Thanks! Our team is checking your documents. You'll be able to publish deals and redeem passes as soon as you're approved."
-            : "Upload a couple of documents so we can approve your venue. As a founding partner you'll pay 0% commission for your first 3 months."}
+            : "Upload your insurance certificate so we can approve your venue. As a founding partner you'll pay 0% commission for your first 3 months."}
         </p>
       </div>
 
       <div className="space-y-3 rounded-3xl border border-border bg-surface p-5">
-        <Row ok={!!venue.hygiene_provided} pending title="Food hygiene rating" sub={venue.hygiene_provided ? "Checked automatically from the Food Standards Agency" : "We're looking this up for you — nothing to do"} />
-        <Row ok={!!venue.id_provided} title="Owner ID" sub={venue.id_provided ? "Received" : "Upload a photo or scan below"} />
+        <Row ok={!!venue.hygiene_provided} title="Food hygiene rating" sub="Verified on the Food Standards Agency register" />
         <Row ok={!!venue.insurance_provided} pending={underReview} title="Public liability insurance" sub={venue.insurance_provided ? "Received — under review by our team" : "Upload your certificate below"} />
 
         {needsUploads ? (
           <form onSubmit={onSubmit} className="space-y-4 border-t border-border pt-5">
-            {!venue.id_provided && (
-              <label className="block space-y-1.5">
-                <span className="text-sm font-semibold">Owner ID (PDF, PNG or JPG)</span>
-                <input type="file" accept=".pdf,.png,.jpg,.jpeg" onChange={(e) => setIdFile(e.target.files?.[0] ?? null)} className={fileCls} />
-              </label>
-            )}
             {!venue.insurance_provided && (
               <>
                 <label className="block space-y-1.5">

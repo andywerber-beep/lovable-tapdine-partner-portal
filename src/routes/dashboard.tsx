@@ -114,7 +114,7 @@ function Offers({ token }: { token: string }) {
       ))}
 
       <section className="rounded-2xl border border-border bg-surface p-6">
-        <h2 className="font-display text-xl font-extrabold">{live.length ? "Replace with a new offer" : "Create an offer"}</h2>
+        <h2 className="font-display text-xl font-extrabold">{live.length ? "Add another offer" : "Create an offer"}</h2>
         <div className="mt-5 grid gap-6 md:grid-cols-[1fr_1.2fr]">
           <div>
             <button

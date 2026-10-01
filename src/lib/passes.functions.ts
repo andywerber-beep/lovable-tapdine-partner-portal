@@ -76,9 +76,8 @@ export const submitCompliance = createServerFn({ method: "POST" })
     const { requireVenueOwner, tapdineAdmin } = await import("./tapdine-db.server");
     const venue = await requireVenueOwner(data.token);
     const admin = tapdineAdmin();
-    const needId = !venue.id_provided;
+    // Owner ID is handled by Stripe payout onboarding, so only insurance is collected here.
     const needIns = !venue.insurance_provided;
-    if (needId && !data.idDoc) throw new Error("Please upload your owner ID.");
     if (needIns && (!data.insuranceDoc || !data.insuranceExpiry))
       throw new Error("Please upload your insurance certificate and its expiry date.");
 
@@ -97,10 +96,6 @@ export const submitCompliance = createServerFn({ method: "POST" })
     };
 
     const update: Record<string, unknown> = { status: "under_review" };
-    if (needId && data.idDoc) {
-      await upload("id_proof", data.idDoc);
-      update.id_provided = true;
-    }
     if (needIns && data.insuranceDoc) {
       update.insurance_doc_path = await upload("insurance", data.insuranceDoc);
       update.insurance_provided = true;
@@ -170,28 +165,34 @@ export const saveVenueDetails = createServerFn({ method: "POST" })
     // Status stays details_pending; filled-in address means the agreement step is next.
     if (!venue.status) update.status = "details_pending";
 
-    // Food hygiene rating from the Food Standards Agency: 3+ auto-accepts.
+    // Food hygiene rating from the Food Standards Agency is mandatory: venue must be listed with 3+.
+    // No certificate uploads are accepted (prevents forged certificates).
+    let fsa: Record<string, unknown> | undefined;
     try {
       const r = await fetch(
         `https://api.ratings.food.gov.uk/Establishments?name=${encodeURIComponent(data.name)}&address=${encodeURIComponent(postcode)}`,
         { headers: { accept: "application/json", "x-api-version": "2" } },
       );
-      if (r.ok) {
-        const j = (await r.json()) as { establishments?: Array<Record<string, unknown>> };
-        const m = j.establishments?.[0];
-        if (m) {
-          const rating = String(m["RatingValue"] ?? "");
-          update.fsa_business_id = m["FHRSID"] ?? null;
-          update.fsa_rating = rating;
-          update.fsa_rating_scheme = m["SchemeType"] ?? null;
-          update.fsa_rating_date = m["RatingDate"] ?? null;
-          update.fsa_checked_at = new Date().toISOString();
-          if (Number(rating) >= 3) update.hygiene_provided = true;
-        }
-      }
+      if (!r.ok) throw new Error(`FSA ${r.status}`);
+      const j = (await r.json()) as { establishments?: Array<Record<string, unknown>> };
+      fsa = j.establishments?.[0];
     } catch (e) {
       console.error("FSA lookup failed", e);
+      throw new Error("We couldn't reach the Food Standards Agency just now. Please try again in a minute.");
     }
+    if (!fsa)
+      throw new Error(
+        "We couldn't find your venue on the Food Standards Agency hygiene register. Use your venue name and postcode exactly as they appear on ratings.food.gov.uk. Only FSA-registered venues can join TapDine.",
+      );
+    const rating = String(fsa["RatingValue"] ?? "");
+    if (!(Number(rating) >= 3))
+      throw new Error("TapDine partners need a food hygiene rating of 3 or above on the Food Standards Agency register.");
+    update.fsa_business_id = fsa["FHRSID"] ?? null;
+    update.fsa_rating = rating;
+    update.fsa_rating_scheme = fsa["SchemeType"] ?? null;
+    update.fsa_rating_date = fsa["RatingDate"] ?? null;
+    update.fsa_checked_at = new Date().toISOString();
+    update.hygiene_provided = true;
 
     let { error } = await admin.from("partners").update(update).eq("id", venue.id);
     if (error && /fsa_|column/i.test(error.message)) {
@@ -498,8 +499,7 @@ export const createPartnerOffer = createServerFn({ method: "POST" })
       throw new Error("Could not upload the photo. Please try again.");
     }
     const image_url = admin.storage.from("venue-media").getPublicUrl(path).data.publicUrl;
-    // One live offer per venue keeps the map simple: retire any previous one.
-    await admin.from("offers").update({ is_active: false }).eq("venue_id", venue.id).eq("is_active", true);
+    // Venues may run any number of live offers at once; each is ended individually.
     const { error } = await admin.from("offers").insert({
       venue_id: venue.id,
       title: data.title,
