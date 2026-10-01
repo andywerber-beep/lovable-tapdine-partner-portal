@@ -296,9 +296,26 @@ export const registerTapdinePartner = createServerFn({ method: "POST" })
     return { ok: true as const };
   });
 
+// Customer App sometimes writes transactions with only offer_id set.
+// Link those to this venue (by its own offers) so they show everywhere.
+async function linkOrphanTransactions(venueId: string) {
+  const { tapdineAdmin } = await import("./tapdine-db.server");
+  const db = tapdineAdmin();
+  const { data: offers } = await db.from("offers").select("id").eq("venue_id", venueId);
+  const ids = (offers ?? []).map((o: { id: unknown }) => String(o.id));
+  if (!ids.length) return;
+  const { error } = await db
+    .from("transactions")
+    .update({ partner_id: venueId })
+    .is("partner_id", null)
+    .in("offer_id", ids);
+  if (error) console.error("link orphan transactions failed", error);
+}
+
 async function findPass(token: string, code: string) {
   const { requireVenueOwner, tapdineAdmin, PASS_WINDOW_MS } = await import("./tapdine-db.server");
   const venue = await requireVenueOwner(token);
+  await linkOrphanTransactions(venue.id);
   const { data: row, error } = await tapdineAdmin()
     .from("transactions")
     .select(PASS_COLS)
@@ -401,6 +418,7 @@ export const getEarnings = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { requireVenueOwner, tapdineAdmin, PASS_WINDOW_MS } = await import("./tapdine-db.server");
     const venue = await requireVenueOwner(data.token);
+    await linkOrphanTransactions(venue.id);
     const { data: rows, error } = await tapdineAdmin()
       .from("transactions")
       .select(`${PASS_COLS}, commission_amount, partner_payout`)
@@ -539,6 +557,7 @@ export const getLiveTickets = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { requireVenueOwner, tapdineAdmin, PASS_WINDOW_MS } = await import("./tapdine-db.server");
     const venue = await requireVenueOwner(data.token);
+    await linkOrphanTransactions(venue.id);
     const { data: rows, error } = await tapdineAdmin()
       .from("transactions")
       .select(PASS_COLS)
