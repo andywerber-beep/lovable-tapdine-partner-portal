@@ -153,7 +153,7 @@ function Offers({ token }: { token: string }) {
       ))}
       <input ref={editRef} type="file" accept="image/*" className="hidden" onChange={(e) => { changePhoto(e.target.files?.[0]); e.target.value = ""; }} />
 
-      <section className="rounded-2xl border border-border bg-surface p-6">
+      <section ref={formRef} className="scroll-mt-24 rounded-2xl border border-border bg-surface p-6">
         <h2 className="font-display text-xl font-extrabold">{live.length ? "Add another offer" : "Create an offer"}</h2>
         <div className="mt-5 grid gap-6 md:grid-cols-[1fr_1.2fr]">
           <div>
