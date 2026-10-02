@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { TapdineGate, gbp } from "@/components/partner/TapdineGate";
-import { createPartnerOffer, getPartnerOffers, retireOffer } from "@/lib/passes.functions";
+import { createPartnerOffer, getPartnerOffers, retireOffer, updateOfferImage } from "@/lib/passes.functions";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -22,7 +22,7 @@ export const Route = createFileRoute("/dashboard")({
 });
 
 /** Centre-crop to 4:3, resize to max 1600px wide, re-encode as JPEG — all in the browser. */
-async function optimise(file: File): Promise<{ base64: string; preview: string; small: boolean }> {
+async function optimise(file: File): Promise<Photo> {
   const bmp = await createImageBitmap(file);
   const ratio = 4 / 3;
   let sw = bmp.width, sh = bmp.height;
@@ -35,21 +35,27 @@ async function optimise(file: File): Promise<{ base64: string; preview: string; 
   const ctx = c.getContext("2d")!;
   ctx.drawImage(bmp, sx, sy, sw, sh, 0, 0, w, h);
   const preview = c.toDataURL("image/jpeg", 0.82);
-  return { base64: preview.split(",")[1] ?? "", preview, small: w < 800 };
+  return { base64: preview.split(",")[1] ?? "", preview, small: w < 800, name: file.name };
 }
+type Photo = { base64: string; preview: string; small: boolean; name: string };
 
 function Offers({ token }: { token: string }) {
   const qc = useQueryClient();
   const list = useServerFn(getPartnerOffers);
   const create = useServerFn(createPartnerOffer);
   const retire = useServerFn(retireOffer);
+  const updateImage = useServerFn(updateOfferImage);
   const fileRef = useRef<HTMLInputElement>(null);
+  const editRef = useRef<HTMLInputElement>(null);
 
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [price, setPrice] = useState("");
   const [hours, setHours] = useState(2);
-  const [photo, setPhoto] = useState<{ base64: string; preview: string; small: boolean } | null>(null);
+  const [photo, setPhoto] = useState<Photo | null>(null);
+  const [drag, setDrag] = useState(false);
+  const [editTarget, setEditTarget] = useState<number | null>(null);
+  const [editing, setEditing] = useState<number | null>(null);
   const [showTips, setShowTips] = useState(false);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
@@ -67,14 +73,26 @@ function Offers({ token }: { token: string }) {
 
   async function pick(f: File | undefined) {
     if (!f) return;
+    if (!f.type.startsWith("image/")) { setMsg("Please choose an image file."); return; }
     try { setPhoto(await optimise(f)); setMsg(null); } catch { setMsg("That photo couldn't be read — try a JPG or PNG."); }
+  }
+
+  async function changePhoto(f: File | undefined) {
+    if (!f || editTarget == null) return;
+    setEditing(editTarget); setMsg(null);
+    try {
+      const p = await optimise(f);
+      await updateImage({ data: { token, offerId: editTarget, imageBase64: p.base64, fileName: p.name } });
+      qc.invalidateQueries({ queryKey: ["partner-offers"] });
+    } catch (e) { setMsg(e instanceof Error ? e.message : "Could not update the photo."); }
+    setEditing(null); setEditTarget(null);
   }
 
   async function publish() {
     if (!photo) return;
     setBusy(true); setMsg(null);
     try {
-      await create({ data: { token, title, description: desc, price: Number(price), hours, imageBase64: photo.base64 } });
+      await create({ data: { token, title, description: desc, price: Number(price), hours, imageBase64: photo.base64, fileName: photo.name } });
       setTitle(""); setDesc(""); setPrice(""); setPhoto(null);
       setMsg("You're live! Nearby customers are being pinged.");
       qc.invalidateQueries({ queryKey: ["partner-offers"] });
@@ -101,7 +119,7 @@ function Offers({ token }: { token: string }) {
 
       {live.map((o) => (
         <div key={o.id} className="flex items-center gap-4 rounded-2xl border border-success/40 bg-success/10 p-4">
-          {o.image_url && <img src={o.image_url} alt={o.title} className="h-20 w-28 rounded-lg object-cover" />}
+          {o.image_url ? <img src={o.image_url} alt={o.title} className="h-20 w-28 rounded-lg object-cover" /> : <div className="h-20 w-28 rounded-lg bg-muted" />}
           <div className="min-w-0 flex-1">
             <p className="text-xs font-bold uppercase text-success">Live on the map</p>
             <p className="truncate font-display text-lg font-extrabold">{o.title}</p>
@@ -109,22 +127,42 @@ function Offers({ token }: { token: string }) {
               {o.discount_price != null && gbp(Number(o.discount_price))} · {Math.max(0, Math.round((new Date(o.expires_at!).getTime() - Date.now()) / 60000))} min left
             </p>
           </div>
-          <Button variant="outline" className="rounded-full" onClick={() => end(o.id)}>End now</Button>
+          <div className="flex flex-col gap-2">
+            <Button variant="outline" className="rounded-full" disabled={editing === o.id} onClick={() => { setEditTarget(o.id); editRef.current?.click(); }}>
+              {editing === o.id ? "Uploading…" : "Change photo"}
+            </Button>
+            <Button variant="outline" className="rounded-full" onClick={() => end(o.id)}>End now</Button>
+          </div>
         </div>
       ))}
+      <input ref={editRef} type="file" accept="image/*" className="hidden" onChange={(e) => { changePhoto(e.target.files?.[0]); e.target.value = ""; }} />
 
       <section className="rounded-2xl border border-border bg-surface p-6">
         <h2 className="font-display text-xl font-extrabold">{live.length ? "Add another offer" : "Create an offer"}</h2>
         <div className="mt-5 grid gap-6 md:grid-cols-[1fr_1.2fr]">
           <div>
-            <button
-              type="button"
-              onClick={() => { setShowTips(true); fileRef.current?.click(); }}
-              className="flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-border bg-background text-sm font-semibold text-muted-foreground hover:border-brand"
-            >
-              {photo ? <img src={photo.preview} alt="Offer preview" className="h-full w-full object-cover" /> : "Take or choose a photo"}
-            </button>
-            <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => pick(e.target.files?.[0])} />
+            {photo ? (
+              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-border">
+                <img src={photo.preview} alt="Offer preview" className="h-full w-full object-cover" />
+                <div className="absolute bottom-2 right-2 flex gap-2">
+                  <Button type="button" size="sm" variant="secondary" className="rounded-full" onClick={() => fileRef.current?.click()}>Replace</Button>
+                  <Button type="button" size="sm" variant="destructive" className="rounded-full" onClick={() => { setPhoto(null); if (fileRef.current) fileRef.current.value = ""; }}>Remove</Button>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => { setShowTips(true); fileRef.current?.click(); }}
+                onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
+                onDragLeave={() => setDrag(false)}
+                onDrop={(e) => { e.preventDefault(); setDrag(false); setShowTips(true); pick(e.dataTransfer.files?.[0]); }}
+                className={`flex aspect-[4/3] w-full flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed bg-background text-sm font-semibold text-muted-foreground hover:border-brand ${drag ? "border-brand bg-brand-soft" : "border-border"}`}
+              >
+                <span>Take or choose a dish photo</span>
+                <span className="text-xs font-normal">or drag & drop it here</span>
+              </button>
+            )}
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => pick(e.target.files?.[0])} />
             {photo?.small && <p className="mt-2 text-xs text-warning">This photo is quite small and may look blurry — try a closer, sharper shot.</p>}
             {showTips && (
               <div className="mt-3 rounded-xl bg-brand-soft p-4 text-xs leading-relaxed">
@@ -160,7 +198,8 @@ function Offers({ token }: { token: string }) {
           <h3 className="text-sm font-bold uppercase text-muted-foreground">Past offers</h3>
           <div className="mt-3 space-y-2">
             {past.slice(0, 8).map((o) => (
-              <div key={o.id} className="flex items-center gap-3 rounded-xl border border-border/60 px-4 py-2.5 text-sm text-muted-foreground">
+              <div key={o.id} className="flex items-center gap-3 rounded-xl border border-border/60 px-3 py-2 text-sm text-muted-foreground">
+                {o.image_url ? <img src={o.image_url} alt={o.title} className="h-10 w-14 rounded-md object-cover" /> : <div className="h-10 w-14 rounded-md bg-muted" />}
                 <span className="flex-1 truncate">{o.title}</span>
                 <span>ended</span>
               </div>
