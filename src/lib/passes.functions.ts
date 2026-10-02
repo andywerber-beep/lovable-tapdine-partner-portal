@@ -498,6 +498,7 @@ export const createPartnerOffer = createServerFn({ method: "POST" })
         price: z.number().positive().max(500),
         hours: z.number().int().min(1).max(24),
         imageBase64: z.string().min(100).max(4_000_000),
+        fileName: z.string().max(120).optional(),
       })
       .parse(d),
   )
@@ -507,16 +508,7 @@ export const createPartnerOffer = createServerFn({ method: "POST" })
     if (!["active", "approved", "live"].includes(String(venue.status)))
       throw new Error("Your venue must be approved before publishing offers.");
     const admin = tapdineAdmin();
-    const path = `offers/${venue.id}/${Date.now()}.jpg`;
-    const bytes = Uint8Array.from(atob(data.imageBase64), (c) => c.charCodeAt(0));
-    const { error: upErr } = await admin.storage
-      .from("venue-media")
-      .upload(path, bytes, { contentType: "image/jpeg", upsert: false });
-    if (upErr) {
-      console.error("offer photo upload failed", upErr);
-      throw new Error("Could not upload the photo. Please try again.");
-    }
-    const image_url = admin.storage.from("venue-media").getPublicUrl(path).data.publicUrl;
+    const image_url = await uploadOfferImage(admin, venue.user_id, data.imageBase64, data.fileName);
     // Venues may run any number of live offers at once; each is ended individually.
     const { error } = await admin.from("offers").insert({
       venue_id: venue.id,
@@ -535,6 +527,54 @@ export const createPartnerOffer = createServerFn({ method: "POST" })
     }
     return { ok: true as const };
   });
+
+/** Uploads to the shared public `offer-images` bucket at `{user_id}/{timestamp}-{filename}`. */
+async function uploadOfferImage(
+  admin: ReturnType<typeof import("./tapdine-db.server").tapdineAdmin>,
+  userId: string,
+  base64: string,
+  fileName?: string,
+) {
+  const base = (fileName ?? "dish").replace(/\.[^.]+$/, "").toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "dish";
+  const path = `${userId}/${Date.now()}-${base}.jpg`;
+  const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+  const { error } = await admin.storage
+    .from("offer-images")
+    .upload(path, bytes, { contentType: "image/jpeg", upsert: false });
+  if (error) {
+    console.error("offer photo upload failed", error);
+    throw new Error("Could not upload the photo. Please try again.");
+  }
+  return admin.storage.from("offer-images").getPublicUrl(path).data.publicUrl;
+}
+
+export const updateOfferImage = createServerFn({ method: "POST" })
+  .inputValidator((d) =>
+    z
+      .object({
+        token: tokenSchema,
+        offerId: z.number().int().positive(),
+        imageBase64: z.string().min(100).max(4_000_000),
+        fileName: z.string().max(120).optional(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data }) => {
+    const { requireVenueOwner, tapdineAdmin } = await import("./tapdine-db.server");
+    const venue = await requireVenueOwner(data.token);
+    const admin = tapdineAdmin();
+    const image_url = await uploadOfferImage(admin, venue.user_id, data.imageBase64, data.fileName);
+    const { data: row, error } = await admin
+      .from("offers")
+      .update({ image_url })
+      .eq("id", data.offerId)
+      .eq("venue_id", venue.id)
+      .select("id")
+      .maybeSingle();
+    if (error || !row) throw new Error("Could not update the photo.");
+    return { ok: true as const, image_url };
+  });
+
 
 export const retireOffer = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ token: tokenSchema, offerId: z.number().int().positive() }).parse(d))
