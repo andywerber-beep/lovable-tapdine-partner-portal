@@ -37,7 +37,7 @@ async function optimise(file: File): Promise<Photo> {
   const preview = c.toDataURL("image/jpeg", 0.82);
   return { base64: preview.split(",")[1] ?? "", preview, small: w < 800, name: file.name };
 }
-type Photo = { base64: string; preview: string; small: boolean; name: string };
+type Photo = { base64: string; preview: string; small: boolean; name: string; reuseId?: number };
 
 function Offers({ token }: { token: string }) {
   const qc = useQueryClient();
@@ -47,6 +47,7 @@ function Offers({ token }: { token: string }) {
   const updateImage = useServerFn(updateOfferImage);
   const fileRef = useRef<HTMLInputElement>(null);
   const editRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLElement>(null);
 
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
@@ -88,13 +89,22 @@ function Offers({ token }: { token: string }) {
     setEditing(null); setEditTarget(null);
   }
 
+  function reuse(o: (typeof offers)[number]) {
+    setTitle(o.title ?? ""); setDesc(o.description ?? "");
+    setPrice(o.discount_price != null ? String(o.discount_price) : "");
+    setPhoto(o.image_url ? { base64: "", preview: o.image_url, small: false, name: "", reuseId: o.id } : null);
+    setMsg(o.image_url ? "Past offer loaded — check the details and publish." : "Past offer loaded — add a photo to publish.");
+    formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   async function publish() {
     if (!photo) return;
     setBusy(true); setMsg(null);
     try {
-      await create({ data: { token, title, description: desc, price: Number(price), hours, imageBase64: photo.base64, fileName: photo.name } });
+      const img = photo.reuseId ? { reuseOfferId: photo.reuseId } : { imageBase64: photo.base64, fileName: photo.name };
+      await create({ data: { token, title, description: desc, price: Number(price), hours, ...img } });
       setTitle(""); setDesc(""); setPrice(""); setPhoto(null);
-      setMsg("You're live on the map! Diners browsing nearby can now see your offer.");
+      setMsg("You're live on the map! Diners exploring nearby with TapDine open can see your live deals.");
       qc.invalidateQueries({ queryKey: ["partner-offers"] });
     } catch (e) { setMsg(e instanceof Error ? e.message : "Could not publish."); }
     setBusy(false);
@@ -115,6 +125,12 @@ function Offers({ token }: { token: string }) {
         <p className="rounded-xl border border-warning/40 bg-warning/10 p-4 text-sm font-semibold">
           You're currently hidden from customers — publish an offer with a photo to go live on the map.
         </p>
+      )}
+      {live.length > 0 && (
+        <div className="rounded-xl border border-success/40 bg-success/10 p-4 text-sm">
+          <p className="font-semibold">You're live on the map! Diners exploring nearby with TapDine open can see your live deals.</p>
+          <p className="mt-1 text-muted-foreground">(Full background pocket alerts launch with our native app store release.)</p>
+        </div>
       )}
 
       {live.map((o) => (
@@ -137,7 +153,7 @@ function Offers({ token }: { token: string }) {
       ))}
       <input ref={editRef} type="file" accept="image/*" className="hidden" onChange={(e) => { changePhoto(e.target.files?.[0]); e.target.value = ""; }} />
 
-      <section className="rounded-2xl border border-border bg-surface p-6">
+      <section ref={formRef} className="scroll-mt-24 rounded-2xl border border-border bg-surface p-6">
         <h2 className="font-display text-xl font-extrabold">{live.length ? "Add another offer" : "Create an offer"}</h2>
         <div className="mt-5 grid gap-6 md:grid-cols-[1fr_1.2fr]">
           <div>
@@ -201,7 +217,7 @@ function Offers({ token }: { token: string }) {
               <div key={o.id} className="flex items-center gap-3 rounded-xl border border-border/60 px-3 py-2 text-sm text-muted-foreground">
                 {o.image_url ? <img src={o.image_url} alt={o.title} className="h-10 w-14 rounded-md object-cover" /> : <div className="h-10 w-14 rounded-md bg-muted" />}
                 <span className="flex-1 truncate">{o.title}</span>
-                <span>ended</span>
+                <Button size="sm" variant="outline" className="rounded-full" onClick={() => reuse(o)}>Reuse offer</Button>
               </div>
             ))}
           </div>
