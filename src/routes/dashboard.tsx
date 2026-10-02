@@ -94,7 +94,7 @@ function Offers({ token }: { token: string }) {
     try {
       await create({ data: { token, title, description: desc, price: Number(price), hours, imageBase64: photo.base64, fileName: photo.name } });
       setTitle(""); setDesc(""); setPrice(""); setPhoto(null);
-      setMsg("You're live! Nearby customers are being pinged.");
+      setMsg("You're live on the map! Diners browsing nearby can now see your offer.");
       qc.invalidateQueries({ queryKey: ["partner-offers"] });
     } catch (e) { setMsg(e instanceof Error ? e.message : "Could not publish."); }
     setBusy(false);
