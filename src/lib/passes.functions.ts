@@ -497,7 +497,8 @@ export const createPartnerOffer = createServerFn({ method: "POST" })
         description: z.string().trim().min(3).max(200),
         price: z.number().positive().max(500),
         hours: z.number().int().min(1).max(24),
-        imageBase64: z.string().min(100).max(4_000_000),
+        imageBase64: z.string().min(100).max(4_000_000).optional(),
+        reuseOfferId: z.number().int().positive().optional(),
         fileName: z.string().max(120).optional(),
       })
       .parse(d),
@@ -508,7 +509,22 @@ export const createPartnerOffer = createServerFn({ method: "POST" })
     if (!["active", "approved", "live"].includes(String(venue.status)))
       throw new Error("Your venue must be approved before publishing offers.");
     const admin = tapdineAdmin();
-    const image_url = await uploadOfferImage(admin, venue.user_id, data.imageBase64, data.fileName);
+    let image_url: string;
+    if (data.imageBase64) {
+      image_url = await uploadOfferImage(admin, venue.user_id, data.imageBase64, data.fileName);
+    } else if (data.reuseOfferId) {
+      // Reuse the photo from one of this venue's own past offers.
+      const { data: prev } = await admin
+        .from("offers")
+        .select("image_url")
+        .eq("id", data.reuseOfferId)
+        .eq("venue_id", venue.id)
+        .maybeSingle();
+      if (!prev?.image_url) throw new Error("That past offer has no photo — please add one.");
+      image_url = prev.image_url as string;
+    } else {
+      throw new Error("Please add a photo to publish.");
+    }
     // Venues may run any number of live offers at once; each is ended individually.
     const { error } = await admin.from("offers").insert({
       venue_id: venue.id,
