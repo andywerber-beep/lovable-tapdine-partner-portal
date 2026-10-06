@@ -54,21 +54,18 @@ export function TapdineGate({ title, children }: { title: string; children: (ctx
   const isLive = venue && ["active", "live"].includes(venue.status ?? "");
   const refresh = () => setReload((n) => n + 1);
 
+  const navLinks = [
+    ["/dashboard", "Offers"],
+    ["/partner/tickets", "Live counter"],
+    ["/partner/redeem", "Redeem"],
+    ["/partner/earnings", "Earnings"],
+  ] as const;
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-40 flex items-center justify-between gap-4 border-b border-border/60 bg-background/85 px-6 py-4 backdrop-blur">
         <Logo size={28} subtitle="Partner Portal" />
         <nav className="flex items-center gap-2 text-sm">
-          {([
-            ["/dashboard", "Offers"],
-            ["/partner/tickets", "Live counter"],
-            ["/partner/redeem", "Redeem"],
-            ["/partner/earnings", "Earnings"],
-          ] as const).map(([to, label]) => (
-            <Link key={to} to={to} className="hidden rounded-full px-3 py-1.5 font-semibold hover:bg-brand-soft sm:inline-block" activeProps={{ className: "bg-brand-soft text-brand" }}>
-              {label}
-            </Link>
-          ))}
           {session && sb && (
             <Button variant="outline" className="rounded-full" onClick={() => sb.auth.signOut()}>
               Sign out
@@ -76,6 +73,13 @@ export function TapdineGate({ title, children }: { title: string; children: (ctx
           )}
         </nav>
       </header>
+      <nav className="sticky top-[68px] z-30 flex gap-1 overflow-x-auto border-b border-border/60 bg-background/90 px-3 py-2 backdrop-blur">
+        {navLinks.map(([to, label]) => (
+          <Link key={to} to={to} className="whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm font-semibold hover:bg-brand-soft" activeProps={{ className: "bg-brand-soft text-brand" }}>
+            {label}
+          </Link>
+        ))}
+      </nav>
       <main className="mx-auto w-full max-w-4xl px-6 py-10">
         {err ? (
           <p className="text-sm text-destructive">{err}</p>

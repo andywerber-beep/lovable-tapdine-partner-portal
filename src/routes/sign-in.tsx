@@ -53,7 +53,7 @@ function SignIn() {
       password,
     });
     if (error) throw new Error("Those details didn't match. Please check and try again.");
-    navigate({ to: (redirect as "/partner/redeem") ?? "/partner/redeem" });
+    navigate({ to: (redirect as "/dashboard") ?? "/dashboard" });
   }
 
   async function onSubmit(e: React.FormEvent) {
