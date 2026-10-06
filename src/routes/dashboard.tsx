@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { TapdineGate, gbp } from "@/components/partner/TapdineGate";
 import { createPartnerOffer, getPartnerOffers, retireOffer, updateOfferImage } from "@/lib/passes.functions";
+import { PayoutsCard } from "@/components/partner/PayoutsCard";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -121,6 +122,7 @@ function Offers({ token }: { token: string }) {
 
   return (
     <div className="space-y-8">
+      <PayoutsCard token={token} />
       {!isLoading && live.length === 0 && (
         <p className="rounded-xl border border-warning/40 bg-warning/10 p-4 text-sm font-semibold">
           You're currently hidden from customers — publish an offer with a photo to go live on the map.
