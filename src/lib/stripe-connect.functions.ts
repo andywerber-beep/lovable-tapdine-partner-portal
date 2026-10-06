@@ -56,8 +56,8 @@ export const createStripeConnectOnboarding = createServerFn({ method: "POST" })
         const acct = await stripe.accounts.create({
           type: "express",
           country: "GB",
-          email: venue.email ?? undefined,
-          business_profile: { name: venue.name ?? undefined, url: venue.website_url ?? undefined, mcc: "5812" },
+          ...(venue.email ? { email: venue.email } : {}),
+          business_profile: { mcc: "5812", ...(venue.name ? { name: venue.name } : {}), ...(venue.website_url ? { url: venue.website_url } : {}) },
           capabilities: { card_payments: { requested: true }, transfers: { requested: true } },
           metadata: { partner_id: String(venue.id) },
         });
