@@ -53,12 +53,20 @@ export const createStripeConnectOnboarding = createServerFn({ method: "POST" })
     let accountId = row["stripe_account_id"] as string | null;
     try {
       if (!accountId) {
-        const acct = await stripe.accounts.create({
-          type: "express",
-          country: "GB",
-          ...(venue.email ? { email: venue.email } : {}),
-          business_profile: { mcc: "5812", ...(venue.name ? { name: venue.name } : {}), ...(venue.website_url ? { url: venue.website_url } : {}) },
-          capabilities: { card_payments: { requested: true }, transfers: { requested: true } },
+        // New Connect platforms must create accounts via Accounts v2 (Express dashboard, GB).
+        const acct = await stripe.v2.core.accounts.create({
+          dashboard: "express",
+          ...(venue.name ? { display_name: venue.name } : {}),
+          ...(venue.email ? { contact_email: venue.email } : {}),
+          identity: { country: "gb" },
+          defaults: {
+            currency: "gbp",
+            responsibilities: { fees_collector: "application", losses_collector: "application" },
+          },
+          configuration: {
+            merchant: { mcc: "5812", capabilities: { card_payments: { requested: true } } },
+            recipient: { capabilities: { stripe_balance: { stripe_transfers: { requested: true } } } },
+          },
           metadata: { partner_id: String(venue.id) },
         });
         accountId = acct.id;
