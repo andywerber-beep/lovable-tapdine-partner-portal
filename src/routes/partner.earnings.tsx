@@ -77,7 +77,7 @@ function Earnings({ token }: { token: string }) {
                 <span className="w-20 text-right font-semibold">{gbp(c.total_amount)}</span>
                 <span className="w-20 text-right text-success">{gbp(c.share)}</span>
                 <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${c.state === "redeemed" ? "bg-success/15 text-success" : c.state === "ready" ? "bg-brand-soft text-brand" : "bg-muted text-muted-foreground"}`}>
-                  {c.state === "ready" ? "active" : c.state}
+                  {c.state === "ready" ? "active" : c.state === "cancelled" ? "refunded" : c.state}
                 </span>
               </li>
             ))}
