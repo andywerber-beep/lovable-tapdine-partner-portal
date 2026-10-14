@@ -105,7 +105,7 @@ function Redeem({ token }: { token: string }) {
             <div>
               <dt className="text-muted-foreground">30-minute window</dt>
               <dd className="font-semibold">
-                {pass.state === "redeemed" ? `Redeemed ${when(pass.redeemed_at)}` : pass.state === "expired" ? "Expired" : pass.expires_at ? <>Valid · <Countdown until={pass.expires_at} /></> : "Not paid"}
+                {pass.state === "cancelled" ? "Cancelled · refunded" : pass.state === "redeemed" ? `Redeemed ${when(pass.redeemed_at)}` : pass.state === "expired" ? "Expired" : pass.expires_at ? <>Valid · <Countdown until={pass.expires_at} /></> : "Not paid"}
               </dd>
             </div>
           </dl>

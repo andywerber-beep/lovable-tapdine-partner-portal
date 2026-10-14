@@ -12,14 +12,17 @@ export type PassView = {
   redeemed_at: string | null;
   status: string | null;
   expires_at: string | null;
-  state: "ready" | "redeemed" | "expired" | "unpaid";
+  state: "ready" | "redeemed" | "expired" | "unpaid" | "cancelled";
 };
 
 function toPass(row: Record<string, unknown>, windowMs: number): PassView {
   const paid = row.paid_at ? new Date(String(row.paid_at)).getTime() : null;
   const expires = paid ? paid + windowMs : null;
   const redeemed = Boolean(row.redeemed_at) || row.status === "redeemed" || row.redeemed === true;
-  const state: PassView["state"] = redeemed
+  const cancelled = ["refunded", "cancelled", "canceled"].includes(String(row.status ?? "").toLowerCase());
+  const state: PassView["state"] = cancelled
+    ? "cancelled"
+    : redeemed
     ? "redeemed"
     : !paid
       ? "unpaid"
@@ -351,6 +354,7 @@ export const redeemPass = createServerFn({ method: "POST" })
     const { tapdineAdmin, PASS_WINDOW_MS } = await import("./tapdine-db.server");
     const { venue, pass, error } = await findPass(data.token, data.code);
     if (!pass) return { pass: null, error };
+    if (pass.state === "cancelled") return { pass, error: "This order was cancelled and refunded — do not serve." };
     if (pass.state === "redeemed") return { pass, error: "This pass has already been redeemed." };
     if (pass.state === "unpaid") return { pass, error: "This pass hasn't been paid for." };
     if (pass.state === "expired") return { pass, error: "This pass has expired." };
@@ -363,6 +367,7 @@ export const redeemPass = createServerFn({ method: "POST" })
       .eq("id", pass.id)
       .eq("partner_id", venue.id)
       .is("redeemed_at", null)
+      .not("status", "in", "(refunded,cancelled,canceled)")
       .gt("paid_at", new Date(Date.now() - PASS_WINDOW_MS).toISOString())
       .select(PASS_COLS)
       .maybeSingle();
@@ -437,7 +442,7 @@ export const getEarnings = createServerFn({ method: "POST" })
       return { ...toPass(r, PASS_WINDOW_MS), commission, share };
     });
     const bucket = (from: Date) => {
-      const rs = list.filter((r) => r.paid_at && new Date(r.paid_at) >= from);
+      const rs = list.filter((r) => r.state !== "cancelled" && r.paid_at && new Date(r.paid_at) >= from);
       const sum = (k: "total_amount" | "share" | "commission") =>
         Math.round(rs.reduce((a, r) => a + r[k], 0) * 100) / 100;
       return { count: rs.length, sales: sum("total_amount"), share: sum("share"), commission: sum("commission") };
@@ -450,7 +455,7 @@ export const getEarnings = createServerFn({ method: "POST" })
         month: bucket(londonStart("month")),
       },
       redeemedCount: list.filter((r) => r.state === "redeemed").length,
-      unredeemedCount: list.filter((r) => r.state !== "redeemed").length,
+      unredeemedCount: list.filter((r) => r.state !== "redeemed" && r.state !== "cancelled").length,
       claims: list.slice(0, 200),
     };
   });
