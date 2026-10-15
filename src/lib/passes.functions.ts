@@ -511,7 +511,7 @@ export const createPartnerOffer = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const { requireVenueOwner, tapdineAdmin } = await import("./tapdine-db.server");
-    const { DEMO_PRESETS, PRESET_IMAGE_ORIGIN, presetImagePath, isDemoVenueName } = await import("./demo-presets");
+    const { DEMO_PRESETS, PRESET_IMAGE_ORIGIN, presetImagePath } = await import("./demo-presets");
     const venue = await requireVenueOwner(data.token);
     if (!["active", "approved", "live"].includes(String(venue.status)))
       throw new Error("Your venue must be approved before publishing offers.");
