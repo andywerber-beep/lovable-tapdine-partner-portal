@@ -158,7 +158,7 @@ function Offers({ token, demo }: { token: string; demo: boolean }) {
         <section className="rounded-2xl border border-brand/40 bg-brand-soft p-4">
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex-1">
-              <p className="text-xs font-bold uppercase text-brand">Demo venue · walk-in pitch</p>
+              <p className="text-xs font-bold uppercase text-brand">{demo ? "Demo venue · walk-in pitch" : "Walk-in pitch"}</p>
               <p className="text-sm">Move this venue's map pin to where you're standing.</p>
             </div>
             <Button className="rounded-full" disabled={gpsBusy} onClick={snapPin}>{gpsBusy ? "Locating…" : "Snap Pin to Current GPS"}</Button>
