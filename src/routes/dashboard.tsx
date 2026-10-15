@@ -4,7 +4,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { TapdineGate, gbp } from "@/components/partner/TapdineGate";
-import { createPartnerOffer, getPartnerOffers, retireOffer, updateOfferImage } from "@/lib/passes.functions";
+import { createPartnerOffer, getPartnerOffers, retireOffer, updateOfferImage, updateVenueLocation } from "@/lib/passes.functions";
+import { DEMO_PRESETS, presetImagePath, isDemoVenueName } from "@/lib/demo-presets";
 import { PayoutsCard } from "@/components/partner/PayoutsCard";
 
 export const Route = createFileRoute("/dashboard")({
@@ -19,7 +20,7 @@ export const Route = createFileRoute("/dashboard")({
     ],
   }),
   ssr: false,
-  component: () => <TapdineGate title="Your offers">{({ token }) => <Offers token={token} />}</TapdineGate>,
+  component: () => <TapdineGate title="Your offers">{({ token, venueName }) => <Offers token={token} demo={isDemoVenueName(venueName)} />}</TapdineGate>,
 });
 
 /** Centre-crop to 4:3, resize to max 1600px wide, re-encode as JPEG — all in the browser. */
@@ -38,14 +39,40 @@ async function optimise(file: File): Promise<Photo> {
   const preview = c.toDataURL("image/jpeg", 0.82);
   return { base64: preview.split(",")[1] ?? "", preview, small: w < 800, name: file.name };
 }
-type Photo = { base64: string; preview: string; small: boolean; name: string; reuseId?: number };
+type Photo = { base64: string; preview: string; small: boolean; name: string; reuseId?: number; presetId?: string };
 
-function Offers({ token }: { token: string }) {
+function Offers({ token, demo }: { token: string; demo: boolean }) {
   const qc = useQueryClient();
   const list = useServerFn(getPartnerOffers);
   const create = useServerFn(createPartnerOffer);
   const retire = useServerFn(retireOffer);
   const updateImage = useServerFn(updateOfferImage);
+  const snapLocation = useServerFn(updateVenueLocation);
+  const [pitch, setPitch] = useState(true);
+  const [gpsBusy, setGpsBusy] = useState(false);
+  const [gpsMsg, setGpsMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  function snapPin() {
+    if (!navigator.geolocation) { setGpsMsg({ ok: false, text: "This device can't share its location." }); return; }
+    setGpsBusy(true); setGpsMsg(null);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const r = await snapLocation({ data: { token, latitude: pos.coords.latitude, longitude: pos.coords.longitude } });
+          setGpsMsg({ ok: true, text: `Pin moved to ${r.latitude.toFixed(5)}, ${r.longitude.toFixed(5)} (±${Math.round(pos.coords.accuracy)}m)` });
+        } catch (e) { setGpsMsg({ ok: false, text: e instanceof Error ? e.message : "Could not move the pin." }); }
+        setGpsBusy(false);
+      },
+      (err) => { setGpsMsg({ ok: false, text: err.code === 1 ? "Location permission was denied — allow it in your browser settings." : "Couldn't get your location — try again." }); setGpsBusy(false); },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
+    );
+  }
+
+  function applyPreset(p: (typeof DEMO_PRESETS)[number]) {
+    setTitle(p.title); setDesc(p.description); setPrice(p.price.toFixed(2));
+    setPhoto({ base64: "", preview: presetImagePath(p.id), small: false, name: "", presetId: p.id });
+    setMsg("Demo dish loaded — tap Publish offer to go live.");
+  }
   const fileRef = useRef<HTMLInputElement>(null);
   const editRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLElement>(null);
@@ -102,7 +129,7 @@ function Offers({ token }: { token: string }) {
     if (!photo) return;
     setBusy(true); setMsg(null);
     try {
-      const img = photo.reuseId ? { reuseOfferId: photo.reuseId } : { imageBase64: photo.base64, fileName: photo.name };
+      const img = photo.presetId ? { presetId: photo.presetId } : photo.reuseId ? { reuseOfferId: photo.reuseId } : { imageBase64: photo.base64, fileName: photo.name };
       await create({ data: { token, title, description: desc, price: Number(price), hours, ...img } });
       setTitle(""); setDesc(""); setPrice(""); setPhoto(null);
       setMsg("You're live on the map! Diners exploring nearby with TapDine open can see your live deals.");
@@ -122,6 +149,25 @@ function Offers({ token }: { token: string }) {
 
   return (
     <div className="space-y-8">
+      {demo && (
+        <div className="flex justify-end">
+          <label className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+            <input type="checkbox" checked={pitch} onChange={(e) => setPitch(e.target.checked)} /> Pitch mode
+          </label>
+        </div>
+      )}
+      {demo && pitch && (
+        <section className="rounded-2xl border border-brand/40 bg-brand-soft p-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex-1">
+              <p className="text-xs font-bold uppercase text-brand">Demo venue · walk-in pitch</p>
+              <p className="text-sm">Move this venue's map pin to where you're standing.</p>
+            </div>
+            <Button className="rounded-full" disabled={gpsBusy} onClick={snapPin}>{gpsBusy ? "Locating…" : "Snap Pin to Current GPS"}</Button>
+          </div>
+          {gpsMsg && <p className={`mt-2 text-sm font-semibold ${gpsMsg.ok ? "text-success" : "text-destructive"}`}>{gpsMsg.text}</p>}
+        </section>
+      )}
       <PayoutsCard token={token} />
       {!isLoading && live.length === 0 && (
         <p className="rounded-xl border border-warning/40 bg-warning/10 p-4 text-sm font-semibold">
@@ -157,6 +203,23 @@ function Offers({ token }: { token: string }) {
 
       <section ref={formRef} className="scroll-mt-24 rounded-2xl border border-border bg-surface p-6">
         <h2 className="font-display text-xl font-extrabold">{live.length ? "Add another offer" : "Create an offer"}</h2>
+        {demo && pitch && (
+          <div className="mt-4">
+            <p className="text-xs font-bold uppercase text-muted-foreground">1-Tap Demo Dish Presets</p>
+            <div className="mt-2 flex gap-3 overflow-x-auto pb-2">
+              {DEMO_PRESETS.map((p) => (
+                <button key={p.id} type="button" onClick={() => applyPreset(p)}
+                  className={`w-36 shrink-0 overflow-hidden rounded-xl border bg-background text-left hover:border-brand ${photo?.presetId === p.id ? "border-brand ring-2 ring-brand" : "border-border"}`}>
+                  <img src={presetImagePath(p.id)} alt={p.title} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                  <div className="p-2">
+                    <p className="line-clamp-2 text-xs font-bold leading-tight">{p.title}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{gbp(p.price)}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         <div className="mt-5 grid gap-6 md:grid-cols-[1fr_1.2fr]">
           <div>
             {photo ? (

@@ -504,12 +504,14 @@ export const createPartnerOffer = createServerFn({ method: "POST" })
         hours: z.number().int().min(1).max(24),
         imageBase64: z.string().min(100).max(4_000_000).optional(),
         reuseOfferId: z.number().int().positive().optional(),
+        presetId: z.string().max(40).optional(),
         fileName: z.string().max(120).optional(),
       })
       .parse(d),
   )
   .handler(async ({ data }) => {
     const { requireVenueOwner, tapdineAdmin } = await import("./tapdine-db.server");
+    const { DEMO_PRESETS, PRESET_IMAGE_ORIGIN, presetImagePath, isDemoVenueName } = await import("./demo-presets");
     const venue = await requireVenueOwner(data.token);
     if (!["active", "approved", "live"].includes(String(venue.status)))
       throw new Error("Your venue must be approved before publishing offers.");
@@ -517,6 +519,12 @@ export const createPartnerOffer = createServerFn({ method: "POST" })
     let image_url: string;
     if (data.imageBase64) {
       image_url = await uploadOfferImage(admin, venue.user_id, data.imageBase64, data.fileName);
+    } else if (data.presetId) {
+      // Stock demo photos are only for demo/test venues — real venues must upload real photos.
+      if (!isDemoVenueName(venue.name)) throw new Error("Please upload a real photo of your dish.");
+      const preset = DEMO_PRESETS.find((p) => p.id === data.presetId);
+      if (!preset) throw new Error("Unknown demo preset.");
+      image_url = PRESET_IMAGE_ORIGIN + presetImagePath(preset.id);
     } else if (data.reuseOfferId) {
       // Reuse the photo from one of this venue's own past offers.
       const { data: prev } = await admin
@@ -649,4 +657,25 @@ export const markTicketServed = createServerFn({ method: "POST" })
       .maybeSingle();
     if (error) throw new Error("Could not mark as served.");
     return { ok: Boolean(row) };
+  });
+
+/** Pitch tool: snaps a demo/test venue's map pin to the device's current GPS. */
+export const updateVenueLocation = createServerFn({ method: "POST" })
+  .inputValidator((d) =>
+    z.object({ token: tokenSchema, latitude: z.number().min(-90).max(90), longitude: z.number().min(-180).max(180) }).parse(d),
+  )
+  .handler(async ({ data }) => {
+    const { requireVenueOwner, tapdineAdmin } = await import("./tapdine-db.server");
+    const { isDemoVenueName } = await import("./demo-presets");
+    const venue = await requireVenueOwner(data.token);
+    if (!isDemoVenueName(venue.name)) throw new Error("Pin snapping is only available for demo venues.");
+    const { error } = await tapdineAdmin()
+      .from("partners")
+      .update({ latitude: data.latitude, longitude: data.longitude })
+      .eq("id", venue.id);
+    if (error) {
+      console.error("location update failed", error);
+      throw new Error("Could not update the pin.");
+    }
+    return { latitude: data.latitude, longitude: data.longitude };
   });
