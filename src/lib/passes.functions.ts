@@ -520,8 +520,7 @@ export const createPartnerOffer = createServerFn({ method: "POST" })
     if (data.imageBase64) {
       image_url = await uploadOfferImage(admin, venue.user_id, data.imageBase64, data.fileName);
     } else if (data.presetId) {
-      // Stock demo photos are only for demo/test venues — real venues must upload real photos.
-      if (!isDemoVenueName(venue.name)) throw new Error("Please upload a real photo of your dish.");
+      // Pitch-mode stock photos: allowed for any venue while demo presets are shown.
       const preset = DEMO_PRESETS.find((p) => p.id === data.presetId);
       if (!preset) throw new Error("Unknown demo preset.");
       image_url = PRESET_IMAGE_ORIGIN + presetImagePath(preset.id);

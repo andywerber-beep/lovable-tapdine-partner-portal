@@ -201,7 +201,7 @@ function Offers({ token, demo }: { token: string; demo: boolean }) {
 
       <section ref={formRef} className="scroll-mt-24 rounded-2xl border border-border bg-surface p-6">
         <h2 className="font-display text-xl font-extrabold">{live.length ? "Add another offer" : "Create an offer"}</h2>
-        {demo && pitch && (
+        {pitch && (
           <div className="mt-4">
             <p className="text-xs font-bold uppercase text-muted-foreground">1-Tap Demo Dish Presets</p>
             <div className="mt-2 flex gap-3 overflow-x-auto pb-2">
