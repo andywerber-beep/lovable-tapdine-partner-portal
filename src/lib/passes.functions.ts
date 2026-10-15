@@ -658,3 +658,24 @@ export const markTicketServed = createServerFn({ method: "POST" })
     if (error) throw new Error("Could not mark as served.");
     return { ok: Boolean(row) };
   });
+
+/** Pitch tool: snaps a demo/test venue's map pin to the device's current GPS. */
+export const updateVenueLocation = createServerFn({ method: "POST" })
+  .inputValidator((d) =>
+    z.object({ token: tokenSchema, latitude: z.number().min(-90).max(90), longitude: z.number().min(-180).max(180) }).parse(d),
+  )
+  .handler(async ({ data }) => {
+    const { requireVenueOwner, tapdineAdmin } = await import("./tapdine-db.server");
+    const { isDemoVenueName } = await import("./demo-presets");
+    const venue = await requireVenueOwner(data.token);
+    if (!isDemoVenueName(venue.name)) throw new Error("Pin snapping is only available for demo venues.");
+    const { error } = await tapdineAdmin()
+      .from("partners")
+      .update({ latitude: data.latitude, longitude: data.longitude })
+      .eq("id", venue.id);
+    if (error) {
+      console.error("location update failed", error);
+      throw new Error("Could not update the pin.");
+    }
+    return { latitude: data.latitude, longitude: data.longitude };
+  });
