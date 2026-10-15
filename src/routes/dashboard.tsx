@@ -149,14 +149,12 @@ function Offers({ token, demo }: { token: string; demo: boolean }) {
 
   return (
     <div className="space-y-8">
-      {demo && (
-        <div className="flex justify-end">
-          <label className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-            <input type="checkbox" checked={pitch} onChange={(e) => setPitch(e.target.checked)} /> Pitch mode
-          </label>
-        </div>
-      )}
-      {demo && pitch && (
+      <div className="flex justify-end">
+        <label className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+          <input type="checkbox" checked={pitch} onChange={(e) => setPitch(e.target.checked)} /> Pitch mode
+        </label>
+      </div>
+      {pitch && (
         <section className="rounded-2xl border border-brand/40 bg-brand-soft p-4">
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex-1">
