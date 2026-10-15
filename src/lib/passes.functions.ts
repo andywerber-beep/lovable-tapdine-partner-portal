@@ -666,9 +666,7 @@ export const updateVenueLocation = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const { requireVenueOwner, tapdineAdmin } = await import("./tapdine-db.server");
-    const { isDemoVenueName } = await import("./demo-presets");
     const venue = await requireVenueOwner(data.token);
-    if (!isDemoVenueName(venue.name)) throw new Error("Pin snapping is only available for demo venues.");
     const { error } = await tapdineAdmin()
       .from("partners")
       .update({ latitude: data.latitude, longitude: data.longitude })
