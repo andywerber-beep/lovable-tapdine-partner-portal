@@ -157,9 +157,16 @@ function SignIn() {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="pw" className="text-sm font-medium text-muted-foreground">
-                Password
-              </label>
+              <div className="flex items-center justify-between">
+                <label htmlFor="pw" className="text-sm font-medium text-muted-foreground">
+                  Password
+                </label>
+                {mode === "in" && (
+                  <Link to="/forgot-password" className="text-xs font-semibold text-brand hover:underline">
+                    Forgot password?
+                  </Link>
+                )}
+              </div>
               <div className="relative">
                 <input
                   id="pw"
