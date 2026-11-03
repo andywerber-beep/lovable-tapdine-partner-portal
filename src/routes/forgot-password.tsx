@@ -20,7 +20,7 @@ export const Route = createFileRoute("/forgot-password")({
   component: ForgotPassword,
 });
 
-export function ForgotPassword() {
+function ForgotPassword() {
   const loadConfig = useServerFn(getTapdineAuthConfig);
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
