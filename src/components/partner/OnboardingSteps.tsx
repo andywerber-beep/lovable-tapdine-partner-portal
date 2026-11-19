@@ -156,19 +156,20 @@ export function AgreementStep({ token, onDone, onSignOut }: { token: string; onD
       <Header badge="Step 2 of 4" title="Your partner agreement" sub="Simple, fair terms. No monthly fees, no hidden costs." />
       <div className="space-y-5 rounded-3xl border border-border bg-surface p-6">
         <div className="rounded-2xl border border-brand/25 bg-brand-soft p-5">
-          <p className="font-display text-lg font-extrabold">0% commission for your first 3 months</p>
-          <p className="mt-1 text-sm text-muted-foreground">As a founding partner. After that, a flat 10% commission on sales through TapDine.</p>
+          <p className="font-display text-lg font-extrabold">0% commission on your first 50 orders or 60 days</p>
+          <p className="mt-1 text-sm text-muted-foreground">Whichever comes first as a founding partner. After that, a flat 10% commission on sales through TapDine.</p>
         </div>
         <div className="max-h-56 space-y-3 overflow-y-auto rounded-2xl border border-border bg-background p-4 text-sm leading-relaxed text-muted-foreground">
-          <p><strong className="text-foreground">1. What TapDine does.</strong> The portal lets your venue publish offers, add photos and menu links, redeem customer passes and track your earnings.</p>
-          <p><strong className="text-foreground">2. Commission.</strong> Founding partners pay 0% commission for their first 3 months. After that, a flat 10% commission applies to purchases made through TapDine. It is taken automatically at the time of purchase; you receive the remaining 90%.</p>
-          <p><strong className="text-foreground">3. No fees.</strong> There are no set-up fees, monthly fees or lock-in periods. You can pause or remove offers at any time.</p>
-          <p><strong className="text-foreground">4. Passes.</strong> Customers have 30 minutes from payment to redeem a pass at your venue. Staff should decline passes that have expired or belong to another venue.</p>
-          <p><strong className="text-foreground">5. Verification.</strong> You must hold valid public liability insurance and a food hygiene rating of 3 or above, and keep your details up to date.</p>
+          <p><strong className="text-foreground">1. What TapDine does.</strong> TapDine operates a live local radar connecting walk-in diners to nearby independent venues. TapDine provides customer discovery, digital pass issuance and payment routing. The contract for food, beverages and hospitality is formed directly between you (the Partner Venue) and the customer.</p>
+          <p><strong className="text-foreground">2. Map visibility &amp; ranking.</strong> Your venue appears on the live customer map if and only if you have an active published offer running. Offers are surfaced to diners based on proximity and live availability.</p>
+          <p><strong className="text-foreground">3. Commercial terms &amp; payouts.</strong> Founding partners pay 0% commission on their first 50 completed orders or 60 days, whichever comes first. After that, standard 10% platform commission applies. Payouts (net of commission and processing fees) transfer directly to your bank account via Stripe Connect; TapDine never holds client funds.</p>
+          <p><strong className="text-foreground">4. Passes, cancellations &amp; no-shows.</strong> Customers have 30 minutes from payment confirmation to redeem their pass at your counter. Customers have a 2-minute accidental cancellation grace window. For quantity-capped offers where inventory is held, you receive your full payout if a customer no-shows past 30 minutes. If you are closed, out of stock, or fail to honour an active pass, the customer is refunded 100% and no payout is issued.</p>
+          <p><strong className="text-foreground">5. Food safety, allergens &amp; insurance.</strong> You warrant maintaining an FSA food hygiene rating of 3 or higher (or a &ldquo;Pass&rdquo; under the FHIS scheme in Scotland) and minimum £2,000,000 public liability insurance. You must accurately declare all statutory allergens in the portal before publishing any offer.</p>
+          <p><strong className="text-foreground">6. Fair platform rules &amp; liability.</strong> TapDine operates under balanced platform standards. You indemnify TapDine for food safety breaches or failure to honour passes, but not for TapDine&rsquo;s own app or system faults. Liability is mutually capped. You will be given written reasons and notice before any suspension, with an internal complaints route via venues@tapdine.app. Governed by English law.</p>
         </div>
         <label className="flex cursor-pointer items-start gap-3 text-sm">
           <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5 h-5 w-5 accent-[var(--brand)]" />
-          <span>I accept the TapDine partner agreement, including 0% commission for 3 months and a flat 10% commission thereafter.</span>
+          <span>I accept the TapDine partner merchant agreement, including 0% commission on my first 50 orders or 60 days, and a flat 10% commission thereafter.</span>
         </label>
         {err && <p className="rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-sm">{err}</p>}
         <Button onClick={onAccept} disabled={busy} className="h-12 w-full rounded-full text-base font-bold">
