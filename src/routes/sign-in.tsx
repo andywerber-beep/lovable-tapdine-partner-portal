@@ -117,8 +117,8 @@ function SignIn() {
           </p>
           {mode === "up" && (
             <div className="mt-6 rounded-lg border border-brand/25 bg-brand-soft p-5">
-              <p className="font-display text-lg font-extrabold text-foreground">0% commission for your first 3 months</p>
-              <p className="mt-1 text-sm text-muted-foreground">Then a flat 10% commission. No monthly fees or hidden costs.</p>
+              <p className="font-display text-lg font-extrabold text-foreground">0% commission on your first 50 orders or 60 days</p>
+              <p className="mt-1 text-sm text-muted-foreground">Whichever comes first as a founding partner. Then a flat 10% commission. No monthly fees or hidden costs.</p>
             </div>
           )}
 

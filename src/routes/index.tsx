@@ -41,7 +41,7 @@ function Landing() {
           <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/85 to-background/20" />
           <div className="relative mx-auto w-full max-w-6xl px-5 py-12 md:py-20">
             <span className="inline-flex rounded-full bg-secondary px-4 py-1.5 text-xs font-extrabold uppercase text-secondary-foreground">
-              Founding partners: 0% commission for 3 months
+              Founding partners: 0% commission on your first 50 orders or 60 days
             </span>
             <h1 className="mt-5 max-w-2xl text-4xl font-black leading-tight md:text-6xl">Turn quiet hours into busy ones.</h1>
             <p className="mt-4 max-w-lg text-lg font-semibold">
@@ -77,7 +77,7 @@ function Landing() {
             <div>
               <h2 className="text-3xl font-bold">Simple pricing</h2>
               <ul className="mt-4 space-y-2 text-base font-semibold">
-                <li>0% commission for your first 3 months</li>
+                <li>0% commission on your first 50 orders or 60 days (whichever comes first)</li>
                 <li>Flat 10% per sale after that</li>
                 <li>No monthly fees, no hidden costs</li>
               </ul>

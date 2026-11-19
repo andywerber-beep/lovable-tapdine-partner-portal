@@ -83,7 +83,7 @@ export function CompliancePending({ venue, token, onDone, onSignOut }: { venue: 
         <p className="mt-2 text-sm text-muted-foreground">
           {underReview
             ? "Thanks! Our team is checking your documents. You'll be able to publish deals and redeem passes as soon as you're approved."
-            : "Upload your insurance certificate so we can approve your venue. As a founding partner you'll pay 0% commission for your first 3 months."}
+            : "Upload your insurance certificate so we can approve your venue. As a founding partner you'll pay 0% commission on your first 50 orders or 60 days, whichever comes first, then a flat 10%."}
         </p>
       </div>
 
